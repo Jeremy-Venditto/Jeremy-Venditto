@@ -1,0 +1,1907 @@
+#!/bin/bash
+#     __                         _   __            ___ __  __
+# __ / /__ _______ __ _  __ __  | | / /__ ___  ___/ (_) /_/ /____
+#/ // / -_) __/ -_)  ' \/ // /  | |/ / -_) _ \/ _  / / __/ __/ _ \
+#\___/\__/_/  \__/_/_/_/\_, /   |___/\__/_//_/\_,_/_/\__/\__/\___/
+#                      /___/
+
+#Jeremy Venditto
+#https://github.com/jeremy-venditto
+#https://jeremyvenditto.info
+
+# Required Packages (running script checks and prompts and install for missing packages)
+  #Arch
+  #bluez bluez-utils pulseaudio-bluetooth pulsemixer paprefs pulseaudio pulseaudio-equalizer bluez-tools pulseaudio-equalizer pavucontrol
+    #Debian?
+    #bluez bluez-tools bluez-firmware pulseaudio-module-bluetooth
+
+### ~~~~~~~ BEGIN USER CONFIGURATION ~~~~~~~ ###
+
+# Launch pulseaudio-equalizer-gtk and tinker with settings, enable Keep setting
+# copy ~/.config/pulse/equalizerrc to ~/.config/pulse/eq-config/NEWFILENAME
+# Add to new config path below
+
+# EXAMPLE
+# CUSTOM_1_PATH="$HOME/.config/pulse/eq-config/YOURFILENAME"
+#~~~~~~~~~~~~~
+CUSTOM_1_PATH='$HOME/.config/pulse/eq-config/test'                                              #KEEPME
+CUSTOM_1_NAME=''
+#~~~~~~~~~~~~~
+CUSTOM_2_PATH=''
+CUSTOM_2_NAME=''
+#~~~~~~~~~~~~~
+CUSTOM_3_PATH=''
+CUSTOM_3_NAME=''
+#~~~~~~~~~~~~~
+CUSTOM_4_PATH=''
+CUSTOM_4_NAME=''
+
+
+################################################################
+############### END USER CONFIGURATION #########################
+################################################################
+red="\e[0;91m"
+blue="\e[0;94m"
+cyan="\e[0;96m"
+magenta="\e[0;95m"
+expand_bg="\e[K"
+blue_bg="\e[0;104m${expand_bg}"
+red_bg="\e[0;101m${expand_bg}"
+green_bg="\e[0;102m${expand_bg}"
+green="\e[0;92m"
+white="\e[0;97m"
+yellow="\e[0;93m"
+bold="\e[1m"
+uline="\e[4m"
+reset="\e[0m"
+###########################################################
+#TEMP FILES
+mkdir -p /tmp/easy-audio
+touch /tmp/easy-audio/easy-audio_bluetooth-list.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_short-name_1.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_sink-list_2.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_sink-1.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_sink-2.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_sink-3.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_custom-1-md5.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_custom-2-md5.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_custom-3-md5.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_custom-4-md5.tmp > /dev/null 2>&1
+touch /tmp/easy-audio/easy-audio_custom-5-md5.tmp > /dev/null 2>&1
+#########################################################
+CUSTOM_1_MD5="22j4p12j4"
+CUSTOM_2_MD5=
+CUSTOM_3_MD5=
+CUSTOM_4_MD5=
+CUSTOM_5_MD5=
+
+
+function RESET_CUSTOM_1_PATH_TO_NORMAL {
+# Reset Name
+	#1st change CUSTOM_1_PATH to REPLACECUSTOM1PATH only on the lines that contain CUSTOM_1_PATH and KEEPME
+sed -e '/^[[:space:]]*CUSTOM_1_PATH.*KEEPME$/s/CUSTOM_1_PATH=''/REPLACECUSTOM1PATH=''/' easyaudio > "easy-audio_sed_1-1.tmp"
+	#Replace all lines that contain REPLACECUSTOM1 with original text.. (allows script to be more flexible, avoids having to keep changing line numbers)
+sed "s/REPLACECUSTOM1PATH.*/CUSTOM_1_PATH=''                                              #KEEPME/g" "easy-audio_sed_1-1" > "easy-audio_sed_1-2.tmp"
+}
+function RESET_CUSTOM_1_NAME_TO_NORMAL {
+# Reset Name
+        #1st change CUSTOM_1_NAME to REPLACECUSTOM1NAME only on the lines that contain CUSTOM_1_PATH and KEEPME
+sed -e '/^[[:space:]]*CUSTOM_1_NAME.*KEEPME$/s/CUSTOM_1_NAME=''/REPLACECUSTOM1NAME=''/' easyaudio > "easy-audio_sed_1-1.tmp"
+        #Replace all lines that contain REPLACECUSTOM1 with original text.. (allows script to be more flexible, avoids having to keep changing line numbers)
+sed "s/REPLACECUSTOM1NAME.*/CUSTOM_1_NAME=''                                              #KEEPME/g" "easy-audio_sed_1-1" > "easy-audio_sed_1-2.tmp"
+}
+function RESET_CUSTOM_1_MD5_TO_NORMAL {
+# Reset Name
+        #1st change CUSTOM_1_MD5 to REPLACECUSTOM1MD5 only on the lines that contain CUSTOM_1_MD5 and KEEPME
+sed -e '/^[[:space:]]*CUSTOM_1_MD5.*KEEPME$/s/CUSTOM_1_MD5=''/REPLACECUSTOM1MD5=''/' easyaudio > "easy-audio_sed_1-1.tmp"
+        #Replace all lines that contain REPLACECUSTOM1MD5 with original text.. (allows script to be more flexible, avoids having to keep changing line numbers)
+sed "s/REPLACECUSTOM1MD5.*/CUSTOM_1_MD5=''                                              #KEEPME/g" "easy-audio_sed_1-1" > "easy-audio_sed_1-2.tmp"
+}
+
+
+function UPDATE_CUSTOM_SUMS {
+     # delete sums if custom path is empty and sums is filled (user deletes path)
+if [[ -z $CUSTOM_1_PATH ]] &&  [[ -n "$CUSTOM_1_MD5" ]];then echo 'use sed to replace CUSTOM_1_MD5 back to normal' && RESET_CUSTOM_1_TO_NORMAL;fi
+     # Update Custom 1 MD5 (user adds path)
+if [[ -z "$CUSTOM_1_MD5" ]] && [[ -n "$CUSTOM_1_PATH" ]];then RESTART_SCRIPT="yes";echo 'Sums have been updated' && md5sum "$CUSTOM_1_PATH" | cut -d ' ' -f1 > /tmp/easy-audio/easy-audio_custom-1-md5.tmp; else RESTART_SCRIPT="no";fi
+     # Check if script needs to be restarted
+if [[ $RESTART_SCRIPT = "yes" ]]; then echo 'Updating New Equalizer Configurations.. restarting script';fi # && ./easy-audio;fi
+     # Detect Config with no name
+if [[ -z $CUSTOM_1_NAME ]] && [[ -n "$CUSTOM_1_PATH" ]];then CUSTOM_1_NAME="UNNAMED CONFIG";fi
+if [[ -z $CUSTOM_2_NAME ]] && [[ -n "$CUSTOM_2_PATH" ]];then CUSTOM_2_NAME="UNNAMED CONFIG";fi
+if [[ -z $CUSTOM_3_NAME ]] && [[ -n "$CUSTOM_3_PATH" ]];then CUSTOM_3_NAME="UNNAMED CONFIG";fi
+if [[ -z $CUSTOM_4_NAME ]] && [[ -n "$CUSTOM_4_PATH" ]];then CUSTOM_4_NAME="UNNAMED CONFIG";fi
+if [[ -z $CUSTOM_5_NAME ]] && [[ -n "$CUSTOM_5_PATH" ]];then CUSTOM_5_NAME="UNNAMED CONFIG";fi
+     # If Custom Path is Empty, List entry will show EMPTY
+if [[ -z $CUSTOM_1_PATH ]]; then CUSTOM_1_NAME="EMPTY";fi # else CUSTOM_1=$(md5sum $CUSTOM_1_PATH | awk '{print $1}');fi
+if [[ -z $CUSTOM_2_PATH ]]; then CUSTOM_2_NAME="EMPTY";fi # else CUSTOM_2=$(md5sum $CUSTOM_2_PATH | awk '{print $1}');fi
+if [[ -z $CUSTOM_3_PATH ]]; then CUSTOM_3_NAME="EMPTY";fi #; else CUSTOM_3=$(md5sum $CUSTOM_3_PATH | awk '{print $1}');fi
+if [[ -z $CUSTOM_4_PATH ]]; then CUSTOM_4_NAME="EMPTY";fi # else CUSTOM_4=$(md5sum $CUSTOM_4_PATH | awk '{print $1}');fi
+if [[ -z $CUSTOM_5_PATH ]]; then CUSTOM_5_NAME="EMPTY";fi # else CUSTOM_4=$(md5sum $CUSTOM_4_PATH | awk '{print $1}');fi
+}
+
+
+################################################################
+################# BEGIN EQUALIZER ##############################
+################################################################
+
+
+EQ_STATUS=$(pulseaudio-equalizer status | grep status | grep -v configuration | sed -e 's/^.//' -e 's/.$//')
+
+# install configs
+function INSTALL_CONFIGS {
+        #Bass Boost
+if [[ -e "$HOME/.config/pulse/eq-config/big-bass-boost" ]]; then qqq='a' ;else
+  printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nBass Boost\n1\n1\n-30\n30\n15\n4.0\n9.0\n11.0\n9.0\n5.5\n1.5\n-1.0\n-2.0\n-2.0\n0.0\n0.0\n2.0\n3.0\n3.0\n3.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/bass-boost"
+fi
+        #Big Bass Boost
+if [[ -e "$HOME/.config/pulse/eq-config/big-bass-boost" ]]; then qqq='a' ;else
+  printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nBig Bass Boost\n1\n1\n-30\n30\n15\n15.0\n13.5\n10.0\n7.0\n3.0\n0.3\n-1.0\n-2.0\n-2.0\n0.0\n0.0\n2.0\n3.0\n3.0\n3.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n"  > "$HOME/.config/pulse/eq-config/big-bass-boost"
+fi
+        #Bose Quiet  FIX ME
+if [[ -e "$HOME/.config/pulse/eq-config/bose-quiet-comfort-35" ]]; then qqq='a' ;else
+        printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nBose QCon 35\n1\n1\n-30\n30\n15\n6.1\n3.7\n-2.0\n-3.7\n-5.0\n-10.0\n-11.5\n-11.5\n-10.0\n-5.0\n-2.7\n-1.0\n-1.3\n2.4\n5.7\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n"  > "$HOME/.config/pulse/eq-config/bose-quiet-comfort-35"
+fi
+        #Boosted
+if [[ -e "$HOME/.config/pulse/eq-config/boosted" ]]; then qqq='a' ;else
+   printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nBoosted\n1\n1\n-30\n30\n15\n5.0\n5.0\n4.0\n0.0\n0.0\n1.0\n1.0\n1.0\n1.0\n2.0\n2.0\n4.0\n3.0\n3.0\n2.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n"  > "$HOME/.config/pulse/eq-config/boosted"
+fi
+        #Classical
+if [[ -e "$HOME/.config/pulse/eq-config/classical" ]]; then qqq='a' ;else
+  printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nClassical\n1\n1\n-30\n30\n15\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-0.2\n-21.0\n-21.0\n-27.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n"  > "$HOME/.config/pulse/eq-config/classical"
+fi
+        #Club
+if [[ -e "$HOME/.config/pulse/eq-config/club" ]]; then qqq='a' ;else
+  printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nClub\n1\n1\n-30\n30\n15\n-0.2\n-0.2\n-0.2\n-0.2\n3.5\n3.5\n3.5\n3.5\n3.5\n3.5\n3.5\n2.5\n2.5\n0.0\n0.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/club"
+fi
+        # Dance
+if [[ -e "$HOME/.config/pulse/eq-config/dance" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nDance\n1\n1\n-30\n30\n15\n6.1\n4.3\n4.3\n1.7\n1.7\n1.7\n-0.1\n-0.1\n-0.1\n0.8\n-10.7\n-14.2\n-15.1\n-7.2\n0.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/dance"
+fi
+        # Flat
+if [[ -e "$HOME/.config/pulse/eq-config/flat" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nFlat\n1\n1\n-30\n30\n15\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/flat"
+fi
+        # Full Bass
+if [[ -e "$HOME/.config/pulse/eq-config/full-bass" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nFull Bass\n1\n1\n-30\n30\n15\n-16.0\n-16.0\n6.5\n6.5\n6.0\n5.5\n4.5\n1.0\n1.0\n1.0\n-8.0\n-10.0\n-16.0\n-16.0\n-20.4\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/full-bass"
+fi
+        # Full Bass and Treble
+if [[ -e "$HOME/.config/pulse/eq-config/full-bass-and-treble" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nFull Bass & Treble\n1\n1\n-30\n30\n15\n4.8\n4.8\n3.5\n2.5\n0.0\n-7.0\n-14.0\n-10.0\n-10.0\n-8.0\n1.0\n1.0\n5.2\n7.7\n9.5\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/full-bass-and-treble"
+fi
+        # Full Treble
+if [[ -e "$HOME/.config/pulse/eq-config/full-treble" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nFull Treble\n1\n1\n-30\n30\n15\n4.8\n-18.6\n-18.6\n-18.6\n-18.6\n-10.0\n-8.0\n-6.5\n1.5\n1.5\n1.5\n8.5\n10.6\n10.6\n10.6\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/full-treble"
+fi
+        # Headphones
+if [[ -e "$HOME/.config/pulse/eq-config/headphones" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nHeadphones\n1\n1\n-30\n30\n15\n3.0\n3.0\n7.3\n7.0\n3.0\n-1.0\n-6.6\n-6.3\n-4.5\n-4.0\n1.1\n1.2\n5.8\n7.9\n8.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/headphones"
+fi
+        # Laptop
+if [[ -e "$HOME/.config/pulse/eq-config/laptop" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nLaptop\n1\n1\n-30\n30\n15\n-1.0\n-1.0\n-1.0\n-1.0\n-5.0\n-10.0\n-18.0\n-15.0\n-10.0\n-5.0\n-5.0\n-5.0\n-5.0\n0.0\n0.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/laptop"
+fi
+        # Large Hall
+if [[ -e "$HOME/.config/pulse/eq-config/large-hall" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nLarge Hall\n1\n1\n-30\n30\n15\n7.0\n7.0\n7.0\n3.5\n3.0\n3.0\n3.0\n1.5\n0.0\n-2.0\n-3.5\n-6.0\n-9.0\n-1.0\n0.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/large-hall"
+fi
+        # Live
+if [[ -e "$HOME/.config/pulse/eq-config/live" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nLive\n1\n1\n-30\n30\n15\n-9.0\n-5.5\n0.0\n1.5\n2.1\n3.4\n3.4\n3.4\n3.4\n3.4\n3.4\n3.4\n2.8\n1.6\n1.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/live"
+fi
+        # Normal
+if [[ -e "$HOME/.config/pulse/eq-config/normal" ]]; then qqq='a' ;else
+printf "mbeq_1197\n\nmbeq\n\nMultiband EQ\n\n1.0\n\n\n\n0\n\n1\n\n-30\n\n30\n\n15\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n0\n\n50\n\n100\n\n156\n\n220\n\n311\n\n440\n\n622\n\n880\n\n1250\n\n1750\n\n2500\n\n3500\n\n5000\n\n10000\n\n20000\n\n" > "$HOME/.config/pulse/eq-config/normal"
+fi
+        # Party
+if [[ -e "$HOME/.config/pulse/eq-config/party" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nParty\n1\n1\n-30\n30\n15\n4.8\n4.8\n4.8\n3.1\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n0.0\n2.5\n4.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/party"
+fi
+        # Perfect EQ
+if [[ -e "$HOME/.config/pulse/eq-config/perfect_eq" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nPerfect EQ\n1\n1\n-30\n30\n15\n4.0\n2.0\n1.0\n0.0\n0.0\n-1.0\n-1.0\n-2.0\n-2.0\n0.0\n0.0\n2.0\n3.0\n3.0\n3.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/perfect_eq"
+fi
+        # Pop
+if [[ -e "$HOME/.config/pulse/eq-config/pop" ]]; then qqq='a' ;else
+printf "mbeq_1197\n\nmbeq\n\nMultiband EQ\n\n1.0\n\nPop\n\n1\n\n1\n\n-30\n\n30\n\n15\n\n-3.4\n\n1.7\n\n2.0\n\n3.0\n\n5.0\n\n5.6\n\n6.5\n\n5.2\n\n3.2\n\n1.5\n\n0.0\n\n-2.5\n\n-4.8\n\n-4.8\n\n-3.2\n\n50\n\n100\n\n156\n\n220\n\n311\n\n440\n\n622\n\n880\n\n1250\n\n1750\n\n2500\n\n3500\n\n5000\n\n10000\n\n20000\n\n" > "$HOME/.config/pulse/eq-config/pop"
+fi
+        # Reggae
+if [[ -e "$HOME/.config/pulse/eq-config/reggae" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nReggae\n1\n1\n-30\n30\n15\n0.0\n0.0\n0.0\n0.0\n0.0\n-4.5\n-10.0\n-6.0\n0.5\n1.0\n2.0\n4.0\n4.0\n0.0\n0.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/reggae"
+fi
+        # Rock
+if [[ -e "$HOME/.config/pulse/eq-config/rock" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nRock\n1\n1\n-30\n30\n15\n5.3\n2.6\n2.6\n-8.5\n-10.5\n-11.2\n-16.0\n-14.7\n-6.6\n-5.7\n-3.0\n3.0\n6.7\n7.3\n7.3\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/rock"
+fi
+        # Ska
+if [[ -e "$HOME/.config/pulse/eq-config/ska" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nSka\n1\n1\n-30\n30\n15\n-4.5\n-8.1\n-8.9\n-8.5\n-8.0\n-6.0\n0.0\n1.5\n2.5\n2.7\n3.2\n3.3\n5.8\n6.4\n6.4\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/ska"
+fi
+        # Soft
+if [[ -e "$HOME/.config/pulse/eq-config/soft" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nSoft\n1\n1\n-30\n30\n15\n3.2\n2.8\n0.8\n0.9\n0.0\n-2.4\n-4.8\n1.5\n0.0\n1.1\n3.0\n3.0\n5.8\n7.8\n7.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/soft"
+fi
+        # Soft Rock
+if [[ -e "$HOME/.config/pulse/eq-config/soft-rock" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nSoft Rock\n1\n1\n-30\n30\n15\n2.7\n2.7\n2.7\n1.5\n1.5\n1.4\n0.0\n-3.6\n-8.0\n-7.2\n-9.8\n-8.9\n-6.6\n1.4\n5.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/soft-rock"
+fi
+        # Sony
+if [[ -e "$HOME/.config/pulse/eq-config/sony" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\njjo-sony-MDR-V300.preset\n1\n1\n-30\n30\n15\n3.0\n7.0\n7.3\n7.0\n3.0\n-1.0\n-6.6\n-6.3\n-4.5\n-4.0\n3.1\n7.9\n9.6\n9.9\n6.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/sony"
+fi
+        # Super Bass Boost
+if [[ -e "$HOME/.config/pulse/eq-config/super-bass-boost" ]]; then qqq='a' ;else
+printf "mbeq_1197\nmbeq\nMultiband EQ\n1.0\nSuper Bass Boost\n1\n1\n-30\n30\n15\n17.0\n15.0\n11.5\n8.5\n3.5\n0.3\n-1.0\n-2.0\n-2.0\n0.0\n0.0\n2.0\n3.0\n3.0\n3.0\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/super-bass-boost"
+fi
+        # Techno
+if [[ -e "$HOME/.config/pulse/eq-config/techno" ]]; then qqq='a' ;else
+printf " mbeq_1197\nmbeq\nMultiband EQ\n1.0\nTechno\n1\n1\n-30\n30\n15\n5.0\n4.0\n3.9\n3.3\n0.0\n-4.5\n-10.0\n-8.9\n-8.1\n-5.5\n-1.5\n3.0\n6.0\n6.1\n5.8\n50\n100\n156\n220\n311\n440\n622\n880\n1250\n1750\n2500\n3500\n5000\n10000\n20000\n" > "$HOME/.config/pulse/eq-config/techno"
+fi
+}
+
+# Variables
+   # md5 for config files
+function _CHECK_SUMS_ {
+_CURRENT_=$(md5sum $HOME/.config/pulse/equalizerrc | awk '{print $1}')
+_1_="5d14aac7b5b34c5499d275a7cece77ef"   # bass boost
+_2_="b15a43b62b8b001aa8bc2570c461c060"   # big bass boost
+_3_="1245fa8047fdfea799d615ed80e7574a"   # boosted
+_4_="10c276dfc210b0af1857c44d175576e1"   # bose-quiet-comfort-35
+_5_="95e6e33e8e4319a35dec196afce7c5e3"   # classical
+_6_="974979228abd6d429d881d89e80e3fbb"   # club
+_7_="7382c37db93af6377590f45c20061f59"   # dance
+_8_="8e22696453c898e95a1e25121491a17e"   # flat
+_9_="1900d1482abb220f01db0c896f7b9f8d"   # full-bass
+_10_="f58ec794ec9186462367975340adcc2c"  # full-bass-and-treble
+_11_="ded86a296d9f702e057eb123ac0b90a1"  # full-treble
+_12_="0b3890fe0a7bebe9c9dc68b6a6bb9834"  # headphones
+_13_="c23e319110b4b746310a0faad4804417"  # laptop
+_14_="1e2652a2871067f05b9a3534453db7ba"  # large-hall
+_15_="2a3f229869063117e4a3738502384760"  # live
+_16_="bb03126f7738bd9bbcb6a76d190d25ab"  # normal (not used right now)
+_17_="cd7210076e257e41d5d18299147281ef"  # party
+_18_="78e4729971e8452b2484aee3f152efa2"  # perfect_eq
+_19_="13eeeadc1041401251d4119a53ad5ebe"  # pop
+_20_="7df605d7a3227e7cdef1273ee4ca3eaf"  # reggae
+_21_="8468d0962bae1f819710099b5395648e"  # rock
+_22_="8ebfe824539b98d4a3734e74c0bbd289"  # ska
+_23_="29c7f673703f10212461382276a82ba0"  # soft
+_24_="12b209f6e0467be1654258eb7d4e0e44"  # soft-rock
+_25_="26b71b5311d694bbe3efb10f7c569f37"  # sony
+_26_="45757e8ae731a9ce659315b32ef675d2"  # super-bass-boost
+_27_="839cf6fb805236aa91e27c1cd26dda30"  # techno
+}
+
+# Check if equalizer is enabled or disabled
+function _STATUS_ {
+_STATUS_VARIABLE_=$(pulseaudio-equalizer status | grep status | grep -v configuration)
+echo -e "${yellow}${_STATUS_VARIABLE_}${reset}"
+}
+
+# Check current configuration
+function _CHECK_CONFIG_ {
+_CHECK_SUMS_
+if [[ $_CURRENT_ = $_1_ ]]; then echo -e ${green}"Current Config: Bass Boost" ${reset}; fi
+if [[ $_CURRENT_ = $_2_ ]]; then echo -e ${green}"Current Config: Big Bass Boost" ${reset}; fi
+if [[ $_CURRENT_ = $_3_ ]]; then echo -e ${green}"Current Config: Boosted" ${reset}; fi
+if [[ $_CURRENT_ = $_4_ ]]; then echo -e ${green}"Current Config: BOSE Quiet Comfort 35" ${reset}; fi
+if [[ $_CURRENT_ = $_5_ ]]; then echo -e ${green}"Current Config: Classical" ${reset}; fi
+if [[ $_CURRENT_ = $_6_ ]]; then echo -e ${green}"Current Config: Club" ${reset}; fi
+if [[ $_CURRENT_ = $_7_ ]]; then echo -e ${green}"Current Config: Dance" ${reset}; fi
+if [[ $_CURRENT_ = $_8_ ]]; then echo -e ${green}"Current Config: Flat" ${reset}; fi
+if [[ $_CURRENT_ = $_9_ ]]; then echo -e ${green}"Current Config: Full Bass" ${reset}; fi
+if [[ $_CURRENT_ = $_10_ ]]; then echo -e ${green}"Current Config: Full Bass & Treble" ${reset}; fi
+if [[ $_CURRENT_ = $_11_ ]]; then echo -e ${green}"Current Config: Full Treble" ${reset}; fi
+if [[ $_CURRENT_ = $_12_ ]]; then echo -e ${green}"Current Config: Headphones" ${reset}; fi
+if [[ $_CURRENT_ = $_13_ ]]; then echo -e ${green}"Current Config: Laptop" ${reset}; fi
+if [[ $_CURRENT_ = $_14_ ]]; then echo -e ${green}"Current Config: Large Hall" ${reset}; fi
+if [[ $_CURRENT_ = $_15_ ]]; then echo -e ${green}"Current Config: Live" ${reset}; fi
+if [[ $_CURRENT_ = $_16_ ]]; then echo -e ${green}"Current Config: Normal" ${reset}; fi
+if [[ $_CURRENT_ = $_17_ ]]; then echo -e ${green}"Current Config: Party" ${reset}; fi
+if [[ $_CURRENT_ = $_18_ ]]; then echo -e ${green}"Current Config: Perfect EQ" ${reset}; fi
+if [[ $_CURRENT_ = $_19_ ]]; then echo -e ${green}"Current Config: Pop" ${reset}; fi
+if [[ $_CURRENT_ = $_20_ ]]; then echo -e ${green}"Current Config: Reggae" ${reset}; fi
+if [[ $_CURRENT_ = $_21_ ]]; then echo -e ${green}"Current Config: Rock" ${reset}; fi
+if [[ $_CURRENT_ = $_22_ ]]; then echo -e ${green}"Current Config: Ska" ${reset}; fi
+if [[ $_CURRENT_ = $_23_ ]]; then echo -e ${green}"Current Config: Soft" ${reset}; fi
+if [[ $_CURRENT_ = $_24_ ]]; then echo -e ${green}"Current Config: Soft Rock" ${reset}; fi
+if [[ $_CURRENT_ = $_25_ ]]; then echo -e ${green}"Current Config: Sony" ${reset}; fi
+if [[ $_CURRENT_ = $_26_ ]]; then echo -e ${green}"Current Config: Super Bass Boost" ${reset}; fi
+if [[ $_CURRENT_ = $_27_ ]]; then echo -e ${green}"Current Config: Techno" ${reset}; fi
+# Custom Configs
+if [[ $_CURRENT_ = $CUSTOM_1 ]]; then echo -e ${green}"Current Config: "${CUSTOM_1_NAME}"";fi
+if [[ $_CURRENT_ = $CUSTOM_2 ]]; then echo -e ${green}"Current Config: "${CUSTOM_2_NAME}"";fi
+if [[ $_CURRENT_ = $CUSTOM_3 ]]; then echo -e ${green}"Current Config: "${CUSTOM_3_NAME}"";fi
+if [[ $_CURRENT_ = $CUSTOM_4 ]]; then echo -e ${green}"Current Config: "${CUSTOM_4_NAME}"";fi
+if [[ $_CURRENT_ = $CUSTOM_5 ]]; then echo -e ${green}"Current Config: "${CUSTOM_5_NAME}"";fi
+# Add more Configs here
+}
+
+############################   BACKUP UNKNOWN CONFIGURATION   ###################################################
+function _BACKUP_CONFIG_ {
+read -r -p "Backup Unknown Config? [Y/n] " input
+
+case $input in
+    [yY][eE][sS]|[yY])
+echo "enter filename for new config"
+read NEWCONFIG
+ echo "Config has been backed up to"
+ cp ~/.config/pulse/equalizerrc ~/.config/pulse/eq-config/$NEWCONFIG
+# echo "Please change this filename in case you create more new presets"
+ ;;
+    [nN][oO]|[nN])
+ echo "Config not backed up.. it will be lost when you make the next selection"
+       ;;
+    *)
+ echo "Invalid input..."
+ exit 1
+ ;;
+esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+function _UNKNOWN_CONFIG_CUSTOM_ {
+        # Custom Configs 1-4
+if [[ "$_CURRENT_" != @("$CUSTOM_1"|"$CUSTOM_2"|"$CUSTOM_3"|"$CUSTOM_4"|"$CUSTOM_5") ]]; then _BACKUP_CONFIG_;fi
+#echo
+}
+
+#------------------------------------------------------------------#
+function _UNKNOWN_CONFIG_ {
+#_CHECK_SUMS_
+# IF current config is not in the list of configs ask to back up...
+
+# If current config is not in the list of configs, check custom configs
+        # Presets 1-27
+if [[ "$_CURRENT_" != @("$_1_"|"$_2_"|"$_3_"|"$_4_"|"$_5_"|"$_6_"|"$_7_"|"$_8_"|"$_9_"|"$_10_"|"$_11_"|"$_12_"|"$_13_"|"$_14_"|"$_15_"|"$_16_"|"$_17_"|"$_18_"|"$_19_"|"$_20_"|"$_21_"|"$_22_"|"$_23_"|"$_24_"|"$_25_"|"$_26_"|"$_27_"|) ]]; then
+#echo 'NEW CONFIG DETECTED' &&  _BACKUP_CONFIG_; fi
+_UNKNOWN_CONFIG_CUSTOM_;fi
+}
+
+#------------------------------------------------------------------
+###############################################################################################
+
+#"~~~~~~~~~~~~~~~~~~~~~~~CONFIGURATIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+EQ_STATUS=$(pulseaudio-equalizer status | grep status | grep -v configuration | cut -d ' ' -f3 | sed -e 's/^.//' -e 's/.$//')
+
+# weird
+function TURN_ON_EQUALIZER {
+#if [[ "$EQ_STATUS" = "disabled" ]]; then pulseaudio-equalizer enable && ./equalizer2.sh ;fi
+pulseaudio-equalizer enable #maybe add this && ./equalizer.sh
+}
+function TURN_OFF_EQUALIZER {
+if [[ "$EQ_STATUS" = "enabled" ]]; then pulseaudio-equalizer disable && EQUALIZER_FULL;fi
+}
+
+function _CONFIG_BASS_BOOST_ {
+            if [[ $_CURRENT_ = $_1_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/bass-boost ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Bass Boost'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_BIG_BASS_BOOST_ {
+            if [[ $_CURRENT_ = $_2_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/big-bass-boost ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Big Bass Boost'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_BOOSTED_ {
+            if [[ $_CURRENT_ = $_3_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/boosted ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Boosted'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_BOSE_QUIET_COMFORT_35_ {
+            if [[ $_CURRENT_ = $_4_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/bose-quiet-comfort-35 ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to BOSE Quiet Comfort 35'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_CLASSICAL_ {
+            if [[ $_CURRENT_ = $_5_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/classical ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Classical'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_CLUB_ {
+            if [[ $_CURRENT_ = $_6_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/club ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Club'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_DANCE_ {
+            if [[ $_CURRENT_ = $_7_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/dance ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Dance'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_FLAT_ {
+            if [[ $_CURRENT_ = $_8_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/flat ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Flat'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_FULL_BASS_ {
+            if [[ $_CURRENT_ = $_9_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/full-bass ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Full Bass'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_FULL_BASS_AND_TREBLE_ {
+            if [[ $_CURRENT_ = $_10_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/full-bass-and-treble ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Full Bass and Treble'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_FULL_TREBLE_ {
+            if [[ $_CURRENT_ = $_11_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/full-treble ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Full Treble'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_HEADPHONES_ {
+            if [[ $_CURRENT_ = $_12_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/headphones ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Headphones'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_LAPTOP_ {
+            if [[ $_CURRENT_ = $_13_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/laptop ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Laptop'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_LARGE_HALL_ {
+            if [[ $_CURRENT_ = $_14_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/large-hall ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Large Hall'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_LIVE_ {
+            if [[ $_CURRENT_ = $_15_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/live ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Live'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_NORMAL_ {
+            if [[ $_CURRENT_ = $_16_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/normal ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Normal'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_PARTY_ {
+            if [[ $_CURRENT_ = $_17_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/party ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Party'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_PERFECT_EQ_ {
+            if [[ $_CURRENT_ = $_18_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/perfect_eq ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Perfect EQ'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_POP_ {
+            if [[ $_CURRENT_ = $_19_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/pop ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Pop'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_REGGAE_ {
+            if [[ $_CURRENT_ = $_20_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/reggae ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Reggae'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_ROCK_ {
+            if [[ $_CURRENT_ = $_21_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/rock ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Rock'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_SKA_ {
+            if [[ $_CURRENT_ = $_22_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/ska ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Ska'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_SOFT_ {
+            if [[ $_CURRENT_ = $_23_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/soft ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Soft'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_SOFT_ROCK_ {
+            if [[ $_CURRENT_ = $_24_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/soft-rock ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Soft Rock'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_SONY_ {
+            if [[ $_CURRENT_ = $_25_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/sony ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Sony'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_SUPER_BASS_BOOST_ {
+            if [[ $_CURRENT_ = $_26_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/super-bass-boost ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Super Bass Boost'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+function _CONFIG_TECHNO_ {
+            if [[ $_CURRENT_ = $_27_ ]]; then TURN_ON_EQUALIZER && echo;echo 'config already enabled'; else
+            cp ~/.config/pulse/eq-config/techno ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
+            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to Techno'
+            #echo;_STATUS_;_CHECK_CONFIG_
+fi
+}
+
+
+## 4 - NOT CONFIGURED (Change _CHANGE_ME_4_  to config file)
+#function _CHANGE_ME_4_ {
+#if [[ $_CURRENT_ = $_4_ ]]; then pulseaudio-equalizer enable > /dev/null; else
+#cp ~/.config/pulse/eq-config/_CHANGE_ME_4_ ~/.config/pulse/equalizerrc;pulseaudio-equalizer enable > /dev/null
+#echo;tput setaf 1;echo ' --------------------------------';
+#echo 'Configuration Updated to _CHANGEME_4_';echo;_STATUS_;_CHECK_CONFIG_
+#fi
+#}
+
+## 5 - NOT CONFIGURED
+#function _CHANGE_ME_5_ {
+#            if [[ $_CURRENT_ = $_5_ ]]; then pulseaudio-equalizer enable > /dev/null; else
+#            cp ~/.config/pulse/eq-config/_CHANGE_ME_5_ ~/.config/pulse/equalizerrc
+#            pulseaudio-equalizer enable > /dev/null
+#            echo;tput setaf 1;echo ' --------------------------------';echo 'Configuration Updated to _CHANGE_ME_5'
+#            echo;_STATUS_;_CHECK_CONFIG_
+#fi
+#}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#---------------------------------------------------------------------------------------#
+# Preset Configurations List
+function _PREMADE_CONFIGS_ {
+echo
+echo -e ${red}"Pre-made Configurations"${reset}
+echo -e ${blue}"Which equalizer configuration do you want to use?"${reset}
+PS3='Please enter your choice: '
+options=("Bass Boost" "Big Bass Boost" "BOSE Quiet Comfort 35" "Boosted" "Classical" "Club" "Dance" "Flat" "Full Bass" "Full Bass & Treble" "Full Treble" "Headphones" "Laptop" "Large Hall" "Live" "Party" "Perfect EQ" "Pop" "Reggae" "Rock" "Ska" "Soft" "Soft Rock" "Sony" "Super Bass Boost" "Techno" "Back" "Main Menu" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Bass Boost")
+            _CONFIG_BASS_BOOST_;EQUALIZER_MAIN_LIST
+            ;;
+        "Big Bass Boost")
+            _CONFIG_BIG_BASS_BOOST_;EQUALIZER_MAIN_LIST
+            ;;
+        "BOSE Quiet Comfort 35")
+            _CONFIG_BOSE_QUIET_COMFORT_35_;EQUALIZER_MAIN_LIST
+            ;;
+        "Boosted")
+            _CONFIG_BOOSTED_;EQUALIZER_MAIN_LIST
+            ;;
+        "Classical")
+            _CONFIG_CLASSICAL_;EQUALIZER_MAIN_LIST
+            ;;
+        "Club")
+            _CONFIG_CLUB_;EQUALIZER_MAIN_LIST
+            ;;
+        "Dance")
+            _CONFIG_DANCE_;EQUALIZER_MAIN_LIST
+            ;;
+        "Flat")
+            _CONFIG_FLAT_;EQUALIZER_MAIN_LIST
+            ;;
+        "Full Bass")
+            _CONFIG_FULL_BASS_;EQUALIZER_MAIN_LIST
+            ;;
+        "Full Bass & Treble")
+            _CONFIG_FULL_BASS_AND_TREBLE_;EQUALIZER_MAIN_LIST
+            ;;
+        "Full Treble")
+            _CONFIG_FULL_TREBLE_;EQUALIZER_MAIN_LIST
+            ;;
+        "Headphones")
+            _CONFIG_HEADPHONES_;EQUALIZER_MAIN_LIST
+            ;;
+        "Laptop")
+            _CONFIG_LAPTOP_;EQUALIZER_MAIN_LIST
+            ;;
+        "Large Hall")
+            _CONFIG_LARGE_HALL_;EQUALIZER_MAIN_LIST
+            ;;
+        "Live")
+            _CONFIG_LIVE_;EQUALIZER_MAIN_LIST
+            ;;
+        "Party")
+            _CONFIG_PARTY_;EQUALIZER_MAIN_LIST
+            ;;
+        "Perfect EQ")
+            _CONFIG_PERFECT_EQ_;EQUALIZER_MAIN_LIST
+            ;;
+        "Pop")
+            _CONFIG_POP_;EQUALIZER_MAIN_LIST
+            ;;
+        "Reggae")
+            _CONFIG_REGGAE_;EQUALIZER_MAIN_LIST
+            ;;
+        "Rock")
+            _CONFIG_ROCK_;EQUALIZER_MAIN_LIST
+            ;;
+        "Ska")
+            _CONFIG_SKA_;EQUALIZER_MAIN_LIST
+            ;;
+        "Soft")
+            _CONFIG_SOFT_;EQUALIZER_MAIN_LIST
+            ;;
+        "Soft Rock")
+            _CONFIG_SOFT_ROCK_;EQUALIZER_MAIN_LIST
+            ;;
+        "Sony")
+            _CONFIG_SONY_;EQUALIZER_MAIN_LIST
+            ;;
+        "Super Bass Boost")
+            _CONFIG_SUPER_BASS_BOOST_;EQUALIZER_MAIN_LIST
+            ;;
+        "Techno")
+            _CONFIG_TECHNO_;EQUALIZER_MAIN_LIST
+            ;;
+	"Back")
+            EQUALIZER_MAIN_LIST
+	    ;;
+	"Main Menu")
+	    ./easy-audio
+	    #_MAIN_CHANGE_SINK_
+	    ;;
+        "Quit")
+#            break
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# SETTINGS LIST
+function EQUALIZER_SETTINGS_MENU {
+# List Settings Menu
+echo
+echo -e ${red}"Settings Menu"${reset}
+echo -e ${blue}"Settings Menu"${reset}
+PS3='Please enter your choice: '
+options=("Enable Equalizer" "Disable Equalizer" "Status" "Back" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Enable Equalizer")
+            TURN_ON_EQUALIZER
+            ;;
+        "Disable Equalizer") # make a settings menu for this to reside in
+read -r -p "Disable Equalizer Audio Sink? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) TURN_OFF_EQUALIZER ;;
+    [nN][oO]|[nN]) EQUALIZER_MAIN_LIST ;; *) echo "Invalid input...";break;esac
+            ;;
+        "Status")
+echo;pulseaudio-equalizer status;_CHECK_CONFIG_;EQUALIZER_SETTINGS_MENU 
+            ;;
+        "Back")
+            EQUALIZER_MAIN_LIST
+            ;;
+        "Quit")
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Equalizer Favorites List
+function EQUALIZER_FAVORITES_LIST {
+# Check for Unkown Configuration
+_UNKNOWN_CONFIG_
+# List EQ Status and check config
+_STATUS_;_CHECK_CONFIG_
+# List Custom Config Menu
+echo
+echo -e ${red}"Favorite Configurations"${reset}
+echo -e ${blue}"Which equalizer configuration do you want to use?"${reset}
+PS3='Please enter your choice: '
+options=("$FAVORITE_1_NAME" "$FAVORITE_2_NAME" "$FAVORITE_3_NAME" "$FAVORITE_4_NAME" "Back" "Main Menu" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "$FAVORITE_1_NAME")
+echo 'hi favorite 1'
+            ;;
+        "$FAVORITE_2_NAME")
+echo 'hi favorite 2'
+            ;;
+        "$FAVORITE_3_NAME")
+echo 'hi favorite 3'
+            ;;
+        "$FAVORITE_4_NAME")
+echo 'hi cutsom 4'
+            ;;
+        "Back")
+            EQUALIZER_MAIN_LIST
+            ;;
+        "Main Menu")
+            ./easy-audio
+            #_MAIN_CHANGE_SINK_
+            ;;
+        "Quit")
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+
+#---------------------------------------------------------------------------------------#
+# EQUALIZER CUSTOM CONFIG LIST
+function EQUALIZER_CUSTOM_LIST {
+# Check for Unkown Configuration
+_UNKNOWN_CONFIG_
+# List EQ Status and check config
+_STATUS_;_CHECK_CONFIG_
+# List Custom Config Menu
+echo
+echo -e ${red}"Custom Configurations"${reset}
+echo -e ${blue}"Which equalizer configuration do you want to use?"${reset}
+PS3='Please enter your choice: '
+options=("$CUSTOM_1_NAME" "$CUSTOM_2_NAME" "$CUSTOM_3_NAME" "$CUSTOM_4_NAME" "Back" "Main Menu" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "$CUSTOM_1_NAME")
+echo 'hi custom 1'
+            ;;
+        "$CUSTOM_2_NAME")
+echo 'hi custom 2'
+            ;;
+        "$CUSTOM_3_NAME")
+echo 'hi custom 3'
+            ;;
+        "$CUSTOM_4_NAME")
+echo 'hi cutsom 4'
+            ;;
+	"Back")
+	    EQUALIZER_MAIN_LIST
+	    ;;
+        "Main Menu")
+            ./easy-audio
+            #_MAIN_CHANGE_SINK_
+            ;;
+        "Quit")
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+
+
+#---------------------------------------------------------------------------------------#
+# EQUALIZER MAIN LIST
+function EQUALIZER_MAIN_LIST {
+# Check for Unkown Configuration
+_UNKNOWN_CONFIG_
+# Check EQ status and current config
+_STATUS_;_CHECK_CONFIG_
+# List Main Equalizer Prompt
+#echo $CUSTOM_NAME_1
+echo;echo -e ${blue}"Which equalizer configuration do you want to use?"${reset}
+PS3='Please enter your choice: '
+options=("Presets" "Custom Configs" "Favorites" "Settings" "Main Menu" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Presets")
+            _PREMADE_CONFIGS_
+            ;;
+        "Custom Configs")
+            EQUALIZER_CUSTOM_LIST
+            ;;
+        "Favorites")
+            EQUALIZER_FAVORITES_LIST
+            ;;
+        "Settings")
+            EQUALIZER_SETTINGS_MENU
+            ;;
+        "Main Menu")
+            ./easy-audio
+            #_MAIN_CHANGE_SINK_
+	    ;;
+        "Quit")
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+#----------------------------------------------------------------------------------------#
+# SCRIPT
+function EQUALIZER_FULL {
+INSTALL_CONFIGS;EQUALIZER_MAIN_LIST
+#_STATUS_;_CHECK_CONFIG_;EQUALIZER_MAIN_LIST
+}
+##################################################
+############## END EQUALIZER #####################
+##################################################
+
+##################################################
+############## BEGIN BLUETOOTH ###################
+##################################################
+
+#function BLUETOOTH_STATUS {
+#if [[ $H
+#}
+function _FIND_LADSPA_ {
+LADSPA=$( pacmd list-sinks | grep "LADSPA" | cut -d ' ' -f 3 | sed 's/^.//')
+if [[ "$LADSPA" = "LADSPA" ]];then LADSPA_ACTIVE=yes;else LAPDSPA_ACTIVE=no;fi;}
+
+#trap -- '' SIGINT
+#trap -- '' SIGQUIT
+function _AUDIO_SWITCHER_ {
+_CHECK_SINK_0_=$(pacmd list-sinks | grep -e 'index:' | grep "0");if [[ -z $_CHECK_SINK_0_ ]]; then SINK_0="no";fi
+_CHECK_SINK_1_=$(pacmd list-sinks | grep -e 'index:' | grep "1");if [[ -z $_CHECK_SINK_1_ ]]; then SINK_1="no";fi
+_CHECK_SINK_2_=$(pacmd list-sinks | grep -e 'index:' | grep "2");if [[ -z $_CHECK_SINK_2_ ]]; then SINK_2="no";fi
+_CHECK_SINK_3_=$(pacmd list-sinks | grep -e 'index:' | grep "3");if [[ -z $_CHECK_SINK_3_ ]]; then SINK_3="no";fi
+_CHECK_SINK_4_=$(pacmd list-sinks | grep -e 'index:' | grep "4");if [[ -z $_CHECK_SINK_4_ ]]; then SINK_4="no";fi
+_CHECK_SINK_5_=$(pacmd list-sinks | grep -e 'index:' | grep "5");if [[ -z $_CHECK_SINK_5_ ]]; then SINK_5="no";fi
+_CHECK_SINK_6_=$(pacmd list-sinks | grep -e 'index:' | grep "6");if [[ -z $_CHECK_SINK_6_ ]]; then SINK_6="no";fi
+_CHECK_SINK_7_=$(pacmd list-sinks | grep -e 'index:' | grep "7");if [[ -z $_CHECK_SINK_7_ ]]; then SINK_7="no";fi
+_CURRENT_SINK_=$(pacmd list-sinks | grep -e 'index:' | grep "*" | cut -d ' ' -f 5)
+echo "Current Sink: $_CURRENT_SINK_";echo
+pacmd list-sinks | grep -e 'index:' | grep "0"
+pacmd list-sinks | grep -e 'index:' | grep "1"
+pacmd list-sinks | grep -e 'index:' | grep "2"
+pacmd list-sinks | grep -e 'index:' | grep "3"
+pacmd list-sinks | grep -e 'index:' | grep "4"
+pacmd list-sinks | grep -e 'index:' | grep "5"
+pacmd list-sinks | grep -e 'index:' | grep "6"
+pacmd list-sinks | grep -e 'index:' | grep "7"
+function _CHANGE_SINK_7_ { if [[ $SINK_7 = "no" ]];then _CHANGE_SINK_0_; else _CHANGE_SINK_ 7;fi;}
+function _CHANGE_SINK_6_ { if [[ $SINK_6 = "no" ]];then _CHANGE_SINK_7_; else pacmd set-default-sink 6;fi;}
+function _CHANGE_SINK_5_ { if [[ $SINK_5 = "no" ]];then _CHANGE_SINK_6_; else pacmd set-default-sink 5;fi;}
+function _CHANGE_SINK_4_ { if [[ $SINK_4 = "no" ]];then _CHANGE_SINK_5_; else pacmd set-default-sink 4;fi;}
+function _CHANGE_SINK_3_ { if [[ $SINK_3 = "no" ]];then _CHANGE_SINK_4_; else pacmd set-default-sink 3;fi;}
+function _CHANGE_SINK_2_ { if [[ $SINK_2 = "no" ]];then _CHANGE_SINK_3_; else pacmd set-default-sink 2;fi;}
+function _CHANGE_SINK_1_ { if [[ $SINK_1 = "no" ]];then _CHANGE_SINK_2_; else pacmd set-default-sink 1;fi;}
+function _CHANGE_SINK_0_ { if [[ $SINK_0 = "no" ]];then _CHANGE_SINK_1_; else pacmd set-default-sink 0;fi;}
+if [[ $_CURRENT_SINK_ = "0" ]];then _CHANGE_SINK_1_;fi
+if [[ $_CURRENT_SINK_ = "1" ]];then _CHANGE_SINK_2_;fi
+if [[ $_CURRENT_SINK_ = "2" ]];then _CHANGE_SINK_3_;fi
+if [[ $_CURRENT_SINK_ = "3" ]];then _CHANGE_SINK_4_;fi
+if [[ $_CURRENT_SINK_ = "4" ]];then _CHANGE_SINK_5_;fi
+if [[ $_CURRENT_SINK_ = "5" ]];then _CHANGE_SINK_6_;fi
+if [[ $_CURRENT_SINK_ = "6" ]];then _CHANGE_SINK_7_;fi
+if [[ $_CURRENT_SINK_ = "7" ]];then _CHANGE_SINK_0_;fi
+echo;read -r -p "Switch Again? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+./easy-audio -a ;;
+[nN][oO]|[nN]) _MAIN_BLUETOOTH_ ;; *) echo "Invalid input...";exit 1;;esac
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ BEGIN AUDIO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+	function _AUDIO_ {
+	# MOVE AUDIO TO NEW SINK
+	function _MOVE_AUDIO_SINK_ {
+	echo "Setting default sink to: $1";
+	pacmd set-default-sink $1
+	pacmd list-sink-inputs | grep index | while read line
+	do
+	echo "Moving input: ";
+	echo $line | cut -f2 -d' ';
+	echo "to sink: $1";
+	pacmd move-sink-input `echo $line | cut -f2 -d' '` $1
+	done
+	}
+	# This will vary by system
+	_MOVE_SINK_0_=$(_MOVE_AUDIO_SINK_ 0);_MOVE_SINK_1_=$(_MOVE_AUDIO_SINK_ 1)
+	_MOVE_SINK_2_=$(_MOVE_AUDIO_SINK_ 2);_MOVE_SINK_3_=$(_MOVE_AUDIO_SINK_ 3)
+
+# Switch Sink again
+#function _SWITCH_SINK_AGAIN_ { read -r -p "How about now? [Y/n] " input ; case $input in [yY][eE][sS]|[yY]) _MAIN_BLUETOOTH_ ;; [nN][oO]|[nN]) echo 'Switching to next audio sink..' && _AUDIO_SWITCHER_ ;; *) echo "Invalid input...";exit 1;;esac;}
+# Switch Sink 1st prompt
+function _SWITCH_SINK_PROMPT_1_ { read -r -p "Is your Audio Working? [Y/n] " input ; case $input in [yY][eE][sS]|[yY]) _MAIN_BLUETOOTH_ ;; [nN][oO]|[nN]) echo 'Switching to next audio sink..' && _AUDIO_SWITCHER_ ;; *) echo "Invalid input...";exit 1;;esac;}
+
+        ############################################################
+        ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
+        ##                                                        ##
+        ## If audio does not work, try a different number below.. ##
+        ##                                                        ##
+                           $MOVE_SINK_3                     ##
+#        _SWITCH_SINK_PROMPT_1_
+        ##                                                        ##
+        ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
+        ############################################################
+
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~ END AUDIO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+rm easy-audio_bluetooth-devices.tmp > /dev/null 2>&1
+rm /tmp/easy-audio/easy-audio_bluetooth-list.tmp > /dev/null 2>&1
+
+
+_LIST_THIS_DEVICES_MAC_=$(bluetoothctl list | cut -d ' ' -f 2)
+function UNBLOCK_BT {
+read -r -p "Turn on Bluetooh [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) rfkill unblock bluetooth && sleep 1;;
+    [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";;esac
+}
+
+# Soft Block Check
+#function SOFT_BLOCK {
+#_CHECK_SOFT_BLOCK_=$(rfkill list | grep -A1 "Bluetooth" | grep blocked | cut -d ' ' -f 3;)
+#if [[ $_CHECK_SOFT_BLOCK_ = "yes" ]]; then SOFT_BLOCKED="yes";else SOFT_BLOCKED="no";fi
+#if [[ $SOFT_BLOCKED = "yes" ]]; then UNBLOCK_BT;fi
+#}
+
+function CHECK_SOFT_BLOCK {
+BT_SOFT_BLOCK=$(rfkill list | grep -A 1 Bluetooth | grep Soft | cut -d ' ' -f 3)
+if [[ $BT_SOFT_BLOCK = yes ]]; then BLUETOOTH_SOFT_STATUS="Off";else BLUETOOTH_SOFT_STATUS="On";fi
+}
+
+function SOFT_BLOCK {
+BT_SOFT_BLOCK=$(rfkill list | grep -A 1 Bluetooth | grep Soft | cut -d ' ' -f 3)
+if [[ $BT_SOFT_BLOCK = yes ]]; then UNBLOCK_BT;fi
+
+}
+
+# Hard Block Check
+function HARD_BLOCK {
+_CHECK_HARD_BLOCK_=$(rfkill list | grep -A2 "Bluetooth" | grep Hard | cut -d ' ' -f 3)
+if [[ $_CHECK_HARD_BLOCK_ = "yes" ]]; then HARD_BLOCKED="yes";else HARD_BLOCKED="no";fi
+  #echo "Is Bluetooth Hard Blocked? $HARD_BLOCKED"
+	# Hard Blocked Warning
+	if [[ $HARD_BLOCKED = "yes" ]];then echo 'Fix BIOS setting or other issues';fi
+}
+
+# Turn on Bluetooth and make discoverable
+function TURN_ON_BT {
+# Check Hard Block Function
+HARD_BLOCK
+# Check Soft Block Function
+SOFT_BLOCK
+# Power on bluetooth
+bluetoothctl power on
+bluetoothctl discoverable-timeout 200
+bluetoothctl discoverable yes
+}
+
+# Scan Devices
+function _SCAN_DEVICES_ {
+echo;read -r -p "Scan for additional devices? [Y/n] " input
+
+case $input in
+    [yY][eE][sS]|[yY])
+echo;echo -e ${cyan}${bold}"Scan will finish after 10 seconds... let me know if you ever see this"${reset}
+timeout 10 bluetoothctl scan on &
+timeout 10 bluetoothctl scan on > tempfile.txt
+echo
+./easy-audio -c
+ ;;
+    [nN][oO]|[nN])
+       ;;
+    *)
+ echo "Invalid input..."
+ ;;
+esac
+}
+
+# Pair Device
+function _PAIR_DEVICE_ {
+read -r -p "Pair Device? [Y/n] " input
+
+case $input in
+    [yY][eE][sS]|[yY])
+ echo "Which Device (MAC ADDRESS)"
+read -r _DEVICE_TO_CONNECT_
+bluetoothctl connect "$_DEVICE_TO_CONNECT_"
+ ;;
+    [nN][oO]|[nN])
+ echo "No"
+       ;;
+    *)
+ echo "Invalid input..."
+ ;;
+esac
+
+}
+# ~~~~~~~~~~~~~~ CHOOSE BLUETOOTH DEVICE ~~~~~~~~~~~~~~~~~~~~~~~~~~
+function _CONFIGURED_DEVICES_ {
+PS3='Please enter your choice: '
+options=("JBL GO 2 (Blue)" "HayDay (Green)" "Other" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "JBL GO 2 (Blue)")
+	TURN_ON_BT
+	JBL_GO_2=$(bluetoothctl paired-devices | grep "JBL GO 2" | cut -d ' ' -f 2)
+	bluetoothctl connect $JBL_GO_2
+            break
+            ;;
+        "HayDay")
+	TURN_ON_BT
+            echo "you chose HAYDAY"
+        HAYDAY=$(bluetoothctl paired-devices | grep "HAYDAY" | cut -d ' ' -f 2)
+	bluetoothctl connect $HAYDAY
+            break
+            ;;
+        "Other")
+	_PAIR_DEVICE_
+            break
+            ;;
+        "Quit")
+            break
+	    exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ AVAILABLE DEVICE~~~~~~~~~~~~~~~~~~~~~~~
+
+function AVAILABLE_DEVICES_LIST {
+echo;echo 'Paired Devices:'
+bluetoothctl paired-devices
+echo;echo 'Available Devices:'
+#bluetoothctl devices > easy-audio_bluetooth-devices.tmp
+awk '{printf("%1d: %s\n", NR, $0)}' easy-audio_bluetooth-devices.tmp > /dev/null 2>&1
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAIR DEVICES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function _PAIR_DEVICE_2_ {
+echo;echo 'Paired Devices:'
+bluetoothctl paired-devices & bluetoothctl paired-devices > /tmp/easy-audio/easy-audio_bluetooth-devices.tmp
+bluetoothctl devices >> easy-audio_bluetooth-devices.tmp 
+cat easy-audio_bluetooth-devices.tmp | awk '!_[$0]++' > /tmp/easy-audio/easy-audio_bluetooth-list.tmp #&& rm easy-audio_bluetooth-devices.tmp # SCAN NEEDS THIS
+#bluetoothctl devices > easy-audio_bluetooth-devices.tmp
+echo;echo -e ${yellow}'Connect to Bluetooth Device:'${reset}
+echo -e ${blue}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+echo -e ${cyan}"# | MAC ADDRESS     | NAME"                       ${reset}
+echo -e ${blue}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+#echo 'please select a number'
+# add numbers to temp file
+awk '{printf("%1d: %s\n", NR, $0)}' /tmp/easy-audio/easy-audio_bluetooth-list.tmp > /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp
+
+#cat /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp
+#NUMBER=$(cat /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1)
+#MAC=$(cat /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3)
+#NAME=$(cat /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+#echo -e "${yellow}""$NUMBER"":""${reset}""${blue}" "$MAC""${reset}""${green}" "$NAME""${reset}"
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Display Colored Sink List
+NUMBER_1=$(sed -n 1p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_1=$(sed -n 1p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_1=$(sed -n 1p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_2=$(sed -n 2p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_2=$(sed -n 2p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_2=$(sed -n 2p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_3=$(sed -n 3p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_3=$(sed -n 3p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_3=$(sed -n 3p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_4=$(sed -n 4p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_4=$(sed -n 4p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_4=$(sed -n 4p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_5=$(sed -n 5p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_5=$(sed -n 5p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_5=$(sed -n 5p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_6=$(sed -n 6p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_6=$(sed -n 6p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_6=$(sed -n 6p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_7=$(sed -n 7p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_7=$(sed -n 7p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_7=$(sed -n 7p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_8=$(sed -n 8p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_8=$(sed -n 8p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_8=$(sed -n 8p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_9=$(sed -n 9p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1);MAC_9=$(sed -n 9p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_9=$(sed -n 9p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_10=$(sed -n 10p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_10=$(sed -n 10p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_10=$(sed -n 10p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_11=$(sed -n 11p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_11=$(sed -n 11p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_11=$(sed -n 11p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_12=$(sed -n 12p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_12=$(sed -n 12p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_12=$(sed -n 12p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_13=$(sed -n 13p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_13=$(sed -n 13p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_13=$(sed -n 13p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_14=$(sed -n 14p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_14=$(sed -n 14p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_14=$(sed -n 14p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_15=$(sed -n 15p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_15=$(sed -n 15p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_15=$(sed -n 15p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_16=$(sed -n 16p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_16=$(sed -n 16p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_16=$(sed -n 16p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_17=$(sed -n 17p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_17=$(sed -n 17p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_17=$(sed -n 17p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_18=$(sed -n 18p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_18=$(sed -n 18p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_18=$(sed -n 18p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_19=$(sed -n 19p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_19=$(sed -n 19p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_19=$(sed -n 19p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_20=$(sed -n 20p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_20=$(sed -n 20p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_20=$(sed -n 20p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_21=$(sed -n 21p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_21=$(sed -n 21p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_21=$(sed -n 21p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_22=$(sed -n 22p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_22=$(sed -n 22p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_22=$(sed -n 22p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_23=$(sed -n 23p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_23=$(sed -n 23p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_23=$(sed -n 23p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_24=$(sed -n 24p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_24=$(sed -n 24p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_24=$(sed -n 24p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_25=$(sed -n 25p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_25=$(sed -n 25p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_25=$(sed -n 25p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_26=$(sed -n 26p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_26=$(sed -n 26p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_26=$(sed -n 26p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_27=$(sed -n 27p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_27=$(sed -n 27p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_27=$(sed -n 27p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_28=$(sed -n 28p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_28=$(sed -n 28p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_28=$(sed -n 28p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_29=$(sed -n 29p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_29=$(sed -n 29p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_29=$(sed -n 29p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+NUMBER_30=$(sed -n 30p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -c 1,2);MAC_30=$(sed -n 30p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 3);NAME_30=$(sed -n 30p /tmp/easy-audio/easy-audio_bluetooth-list-2.tmp | cut -d ' ' -f 4-10)
+if [[ -z $NUMBER_1 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_1:"${reset}${blue}" $MAC_1"${reset}${green}" $NAME_1"${reset};fi
+if [[ -z $NUMBER_2 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_2:"${reset}${blue}" $MAC_2"${reset}${green}" $NAME_2"${reset};fi
+if [[ -z $NUMBER_3 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_3:"${reset}${blue}" $MAC_3"${reset}${green}" $NAME_3"${reset};fi
+if [[ -z $NUMBER_4 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_4:"${reset}${blue}" $MAC_4"${reset}${green}" $NAME_4"${reset};fi
+if [[ -z $NUMBER_5 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_5:"${reset}${blue}" $MAC_5"${reset}${green}" $NAME_5"${reset};fi
+if [[ -z $NUMBER_6 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_6:"${reset}${blue}" $MAC_6"${reset}${green}" $NAME_6"${reset};fi
+if [[ -z $NUMBER_7 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_7:"${reset}${blue}" $MAC_7"${reset}${green}" $NAME_7"${reset};fi
+if [[ -z $NUMBER_8 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_8:"${reset}${blue}" $MAC_8"${reset}${green}" $NAME_8"${reset};fi
+if [[ -z $NUMBER_9 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_9:"${reset}${blue}" $MAC_9"${reset}${green}" $NAME_9"${reset};fi
+if [[ -z $NUMBER_10 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_10:"${reset}${blue}" $MAC_10"${reset}${green}" $NAME_10"${reset};fi
+if [[ -z $NUMBER_11 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_11:"${reset}${blue}" $MAC_11"${reset}${green}" $NAME_11"${reset};fi
+if [[ -z $NUMBER_12 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_12:"${reset}${blue}" $MAC_12"${reset}${green}" $NAME_12"${reset};fi
+if [[ -z $NUMBER_13 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_13:"${reset}${blue}" $MAC_13"${reset}${green}" $NAME_13"${reset};fi
+if [[ -z $NUMBER_14 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_14:"${reset}${blue}" $MAC_14"${reset}${green}" $NAME_14"${reset};fi
+if [[ -z $NUMBER_15 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_15:"${reset}${blue}" $MAC_15"${reset}${green}" $NAME_15"${reset};fi
+if [[ -z $NUMBER_16 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_16:"${reset}${blue}" $MAC_16"${reset}${green}" $NAME_16"${reset};fi
+if [[ -z $NUMBER_17 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_17:"${reset}${blue}" $MAC_17"${reset}${green}" $NAME_17"${reset};fi
+if [[ -z $NUMBER_18 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_18:"${reset}${blue}" $MAC_18"${reset}${green}" $NAME_18"${reset};fi
+if [[ -z $NUMBER_19 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_19:"${reset}${blue}" $MAC_19"${reset}${green}" $NAME_19"${reset};fi
+if [[ -z $NUMBER_20 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_20:"${reset}${blue}" $MAC_20"${reset}${green}" $NAME_20"${reset};fi
+if [[ -z $NUMBER_21 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_21:"${reset}${blue}" $MAC_21"${reset}${green}" $NAME_21"${reset};fi
+if [[ -z $NUMBER_22 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_22:"${reset}${blue}" $MAC_22"${reset}${green}" $NAME_22"${reset};fi
+if [[ -z $NUMBER_23 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_23:"${reset}${blue}" $MAC_23"${reset}${green}" $NAME_23"${reset};fi
+if [[ -z $NUMBER_24 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_24:"${reset}${blue}" $MAC_24"${reset}${green}" $NAME_24"${reset};fi
+if [[ -z $NUMBER_25 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_25:"${reset}${blue}" $MAC_25"${reset}${green}" $NAME_25"${reset};fi
+if [[ -z $NUMBER_26 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_26:"${reset}${blue}" $MAC_26"${reset}${green}" $NAME_26"${reset};fi
+if [[ -z $NUMBER_27 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_27:"${reset}${blue}" $MAC_27"${reset}${green}" $NAME_27"${reset};fi
+if [[ -z $NUMBER_28 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_28:"${reset}${blue}" $MAC_28"${reset}${green}" $NAME_28"${reset};fi
+if [[ -z $NUMBER_29 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_29:"${reset}${blue}" $MAC_29"${reset}${green}" $NAME_29"${reset};fi
+if [[ -z $NUMBER_30 ]]; then qqq=qqqq; else echo -e ${yellow}"$NUMBER_30:"${reset}${blue}" $MAC_30"${reset}${green}" $NAME_30"${reset};fi
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo -e ${blue}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+echo -e ${yellow}"b"${reset}":" ${yellow}"Back"${reset};echo -e ${magenta}"s"${reset}":" ${magenta}"Scan More Devices"${reset};echo -e ${yellow}"q"${reset}":"${yellow}" Quit"${reset};echo;read -r -p "Select option: " chosen_device
+
+# Choice 1
+_CHOICE_1_MAC_=$(sed -n "1p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_1_NAME_=$(sed -n "1p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_1_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "1" ]]; then CONNECTED_BT_NAME="$CHOICE_1_NAME"; echo "Connect to $_CHOICE_1_NAME_ ($_CHOICE_1_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_1_MAC_ && bluetoothctl trust $_CHOICE_1_MAC_ && bluetoothctl connect $_CHOICE_1_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_1_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+
+# Choice 2
+_CHOICE_2_MAC_=$(sed -n "2p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_2_NAME_=$(sed -n "2p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_2_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "2" ]]; then echo "Connect to $_CHOICE_2_NAME_ ($_CHOICE_2_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_2_MAC_ && bluetoothctl trust $_CHOICE_2_MAC_ && bluetoothctl connect $_CHOICE_2_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_2_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+
+# Choice 3
+_CHOICE_3_MAC_=$(sed -n "3p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_3_NAME_=$(sed -n "3p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_3_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "3" ]]; then echo "Connect to $_CHOICE_3_NAME_ ($_CHOICE_3_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_3_MAC_ && bluetoothctl trust $_CHOICE_3_MAC_ && bluetoothctl connect $_CHOICE_3_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_3_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+
+# Choice 4
+_CHOICE_4_MAC_=$(sed -n "4p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_4_NAME_=$(sed -n "4p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_4_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "4" ]]; then echo "Connect to $_CHOICE_4_NAME_ ($_CHOICE_4_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_4_MAC_ && bluetoothctl trust $_CHOICE_4_MAC_ && bluetoothctl connect $_CHOICE_4_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_4_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 4
+_CHOICE_4_MAC_=$(sed -n "4p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_4_NAME_=$(sed -n "4p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_4_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "4" ]]; then echo "Connect to $_CHOICE_4_NAME_ ($_CHOICE_4_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_4_MAC_ && bluetoothctl trust $_CHOICE_4_MAC_ && bluetoothctl connect $_CHOICE_4_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_4_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 5
+_CHOICE_5_MAC_=$(sed -n "5p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_5_NAME_=$(sed -n "5p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_5_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "5" ]]; then echo "Connect to $_CHOICE_5_NAME_ ($_CHOICE_5_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_5_MAC_ && bluetoothctl trust $_CHOICE_5_MAC_ && bluetoothctl connect $_CHOICE_5_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_5_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 6
+_CHOICE_6_MAC_=$(sed -n "6p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_6_NAME_=$(sed -n "6p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_6_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "6" ]]; then echo "Connect to $_CHOICE_6_NAME_ ($_CHOICE_6_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_6_MAC_ && bluetoothctl trust $_CHOICE_6_MAC_ && bluetoothctl connect $_CHOICE_6_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_6_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 7
+_CHOICE_7_MAC_=$(sed -n "7p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_7_NAME_=$(sed -n "7p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_7_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "7" ]]; then echo "Connect to $_CHOICE_7_NAME_ ($_CHOICE_7_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_7_MAC_ && bluetoothctl trust $_CHOICE_7_MAC_ && bluetoothctl connect $_CHOICE_7_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_7_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 8
+_CHOICE_8_MAC_=$(sed -n "8p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_8_NAME_=$(sed -n "8p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_8_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "8" ]]; then echo "Connect to $_CHOICE_8_NAME_ ($_CHOICE_8_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_8_MAC_ && bluetoothctl trust $_CHOICE_8_MAC_ && bluetoothctl connect $_CHOICE_8_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_8_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 9
+_CHOICE_9_MAC_=$(sed -n "9p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_9_NAME_=$(sed -n "9p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_9_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "9" ]]; then echo "Connect to $_CHOICE_9_NAME_ ($_CHOICE_9_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_9_MAC_ && bluetoothctl trust $_CHOICE_9_MAC_ && bluetoothctl connect $_CHOICE_9_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_9_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 10
+_CHOICE_10_MAC_=$(sed -n "10p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_10_NAME_=$(sed -n "10p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_10_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "10" ]]; then echo "Connect to $_CHOICE_10_NAME_ ($_CHOICE_10_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_10_MAC_ && bluetoothctl trust $_CHOICE_10_MAC_ && bluetoothctl connect $_CHOICE_10_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_10_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 11
+_CHOICE_11_MAC_=$(sed -n "11p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_11_NAME_=$(sed -n "11p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_11_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "11" ]]; then echo "Connect to $_CHOICE_11_NAME_ ($_CHOICE_11_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_11_MAC_ && bluetoothctl trust $_CHOICE_11_MAC_ && bluetoothctl connect $_CHOICE_11_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_11_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 12
+_CHOICE_12_MAC_=$(sed -n "12p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_12_NAME_=$(sed -n "12p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_12_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "12" ]]; then echo "Connect to $_CHOICE_12_NAME_ ($_CHOICE_12_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_12_MAC_ && bluetoothctl trust $_CHOICE_12_MAC_ && bluetoothctl connect $_CHOICE_12_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_12_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 13
+_CHOICE_13_MAC_=$(sed -n "13p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_13_NAME_=$(sed -n "13p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_13_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "13" ]]; then echo "Connect to $_CHOICE_13_NAME_ ($_CHOICE_13_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_13_MAC_ && bluetoothctl trust $_CHOICE_13_MAC_ && bluetoothctl connect $_CHOICE_13_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_13_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 14
+_CHOICE_14_MAC_=$(sed -n "14p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_14_NAME_=$(sed -n "14p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_14_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "14" ]]; then echo "Connect to $_CHOICE_14_NAME_ ($_CHOICE_14_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_14_MAC_ && bluetoothctl trust $_CHOICE_14_MAC_ && bluetoothctl connect $_CHOICE_14_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_14_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 15
+_CHOICE_15_MAC_=$(sed -n "15p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_15_NAME_=$(sed -n "15p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_15_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "15" ]]; then echo "Connect to $_CHOICE_15_NAME_ ($_CHOICE_15_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_15_MAC_ && bluetoothctl trust $_CHOICE_15_MAC_ && bluetoothctl connect $_CHOICE_15_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_15_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+# Choice 16
+_CHOICE_16_MAC_=$(sed -n "16p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 2)
+_CHOICE_16_NAME_=$(sed -n "16p" "/tmp/easy-audio/easy-audio_bluetooth-list.tmp" | cut -d ' ' -f 3,4,5,6,7,8,9)
+if grep -Fq "$_CHOICE_16_MAC_" /tmp/easy-audio/easy-audio_bluetooth-list.tmp;then IS_DEVICE_PARIED="yes"; else IS_DEVICE_PAIRED="no";fi
+if [[ $chosen_device = "16" ]]; then echo "Connect to $_CHOICE_16_NAME_ ($_CHOICE_16_MAC_)?"
+#echo "is device paired? $IS_DEVICE_PARIED"
+read -r -p "Are You Sure? [Y/n] " input ; case $input in [yY][eE][sS]|[yY])
+if [[ $IS_DEVICE_PAIRED = "no" ]]; then
+TURN_ON_BT && bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl pair $_CHOICE_16_MAC_ && bluetoothctl trust $_CHOICE_16_MAC_ && bluetoothctl connect $_CHOICE_16_MAC_ && _AUDIO_;
+else TURN_ON_BT;sleep 1; bluetoothctl agent off && bluetoothctl agent NoInputNoOutput && bluetoothctl connect $_CHOICE_16_MAC_ && _AUDIO_ ;fi ;;
+[nN][oO]|[nN]) ./easy-audio -c ;; *) echo "Invalid input...";exit 1;;esac;fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Back
+if [[ $chosen_device = "b" ]]; then _MAIN_BLUETOOTH_;fi
+# Scan More Devices
+if [[ $chosen_device = "s" ]]; then 
+echo;echo -e ${bold}${cyan}"Scan will finish after 10 seconds"${reset};echo;TURN_ON_BT
+timeout 10 bluetoothctl scan on & timeout 10 bluetoothctl scan on > easy-audio_bluetooth-devices.tmp
+sed -i "/Discovering/d" easy-audio_bluetooth-devices.tmp; sed -i "/Discovery/d" easy-audio_bluetooth-devices.tmp; ./easy-audio -c
+#fi
+sed -i "/CHG/d" easy-audio_bluetooth-devices.tmp;sed -i "/DEL/d" easy-audio_bluetooth-devices.tmp;
+fi
+# Quit
+if [[ $chosen_device = "q" ]]; then exit 1;fi
+}
+
+
+######################## MAIN MENU ###################################
+
+function _MAIN_BLUETOOTH_ {
+CHECK_SOFT_BLOCK
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+echo -e ${bold}"Bluetooth Status: ${cyan}$BLUETOOTH_SOFT_STATUS"${reset};echo
+HARD_BLOCK
+echo -e ${bold}${uline}${blue}"Bluetooth Menu"${reset} #${yellow}
+PS3='Please enter your choice: '
+# Connect to Device, Disconnect from device, Scan Devices
+options=("Connect to Device" "Disconnect Device" "Enable Bluetooth" "Disable Bluetooth" "Change Audio Sink" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Connect to Device")
+_PAIR_DEVICE_2_
+            break
+            ;;
+        "Disconnect Device")
+read -r -p "Disconnect from Device? [Y/n] " input ; case $input in [yY][eE][sS]|[yY]) bluetoothctl disconnect ;; [nN][oO]|[nN]) echo "No" ;; *) echo "Invalid input...";exit 1;;esac
+read -r -p "Turn Off Bluetooth? [Y/n] " input ; case $input in [yY][eE][sS]|[yY]) rfkill block bluetooth ;; [nN][oO]|[nN]) echo "No" ;; *) echo "Invalid input...";exit 1;;esac
+
+#	echo;echo 'Paired Devices:'
+#	bluetoothctl paired-devices
+#	echo;echo 'Available Devices:'
+#	bluetoothctl devices
+
+#	AVAILABLE_DEVICES_LIST
+#	_SCAN_DEVICES_
+#	_PAIR_DEVICE_2_
+
+            break
+            ;;
+        "Change Audio Sink")
+	_AUDIO_SWITCHER_
+	./easy-audio -a
+            break
+            ;;
+	"Configured Devices")
+	_CONFIGURED_DEVICES_
+	    break
+	    ;;
+	"Enable Bluetooth")
+	rfkill unblock bluetooth
+	_MAIN_BLUETOOTH_
+	    ;;
+	"Disable Bluetooth")
+	rfkill block bluetooth
+	_MAIN_BLUETOOTH_
+	    break
+	    ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+############################################################################
+}
+
+
+function BLUETOOTH_FULL {
+
+# SCRIPT START BLUETOOTH
+SOFT_BLOCK
+_MAIN_BLUETOOTH_
+#_AUDIO_
+}
+#BLUETOOTH_FULL
+
+#############################################################
+################# END BLUETOOTH #############################
+#############################################################
+
+#############################################################
+################# BEING CHANGE SINK #########################
+#############################################################
+
+CURRENT_SINK=$(pacmd list-sinks | grep index | grep -e '*' | sed 's/^.*\(.\{2\}\)$/\1/')
+CURRENT_SINK_NAME=$(pacmd list-sinks | grep -A 100 '*' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NUMBER_0=$(pacmd list-sinks | grep index | grep -e '0' | grep -v '10' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_1=$(pacmd list-sinks | grep index | grep -e '1' | grep -v '10' | grep -v '11' | grep -v '12' | grep -v '13' | grep -v '14' | grep -v '15' | grep -v '16' | grep -v '17' | grep -v '18' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_2=$(pacmd list-sinks | grep index | grep -e '2' | grep -v '12' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_3=$(pacmd list-sinks | grep index | grep -e '3' | grep -v '13' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_4=$(pacmd list-sinks | grep index | grep -e '4' | grep -v '14' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_5=$(pacmd list-sinks | grep index | grep -e '5' | grep -v '15' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_6=$(pacmd list-sinks | grep index | grep -e '6' | grep -v '16' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_7=$(pacmd list-sinks | grep index | grep -e '7' | grep -v '17' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_8=$(pacmd list-sinks | grep index | grep -e '8' | grep -v '18' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_9=$(pacmd list-sinks | grep index | grep -e '9' | grep -v '19' | sed 's/^.*\(.\{1\}\)$/\1/')
+SINK_NUMBER_10=$(pacmd list-sinks | grep index | grep -e '10' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_11=$(pacmd list-sinks | grep index | grep -e '11' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_12=$(pacmd list-sinks | grep index | grep -e '12' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_13=$(pacmd list-sinks | grep index | grep -e '13' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_14=$(pacmd list-sinks | grep index | grep -e '14' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_15=$(pacmd list-sinks | grep index | grep -e '15' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_16=$(pacmd list-sinks | grep index | grep -e '16' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_17=$(pacmd list-sinks | grep index | grep -e '17' | sed 's/^.*\(.\{2\}\)$/\1/')
+SINK_NUMBER_18=$(pacmd list-sinks | grep index | grep -e '18' | sed 's/^.*\(.\{2\}\)$/\1/')
+if [[ "$CURRENT_SINK" < 9 ]]; then
+SINK_NAME_0=$(pacmd list-sinks | grep -A 500 'index: 0' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+else
+SINK_NAME_0=$(pacmd list-sinks | grep -A 500 'index: 0' | grep 'device.description' | sed -n 2p | cut -d ' ' -f 3-14)
+fi
+if [[ "$CURRENT_SINK" < 9 ]]; then
+SINK_NAME_1=$(pacmd list-sinks | grep -A 500 'index: 1' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+else
+SINK_NAME_1=$(pacmd list-sinks | grep -A 500 'index: 1' | grep 'device.description' | sed -n 2p | cut -d ' ' -f 3-14)
+fi
+SINK_NAME_1=$(pacmd list-sinks | grep -A 500 'index: 1' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_2=$(pacmd list-sinks | grep -A 500 'index: 2' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_3=$(pacmd list-sinks | grep -A 500 'index: 3' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_4=$(pacmd list-sinks | grep -A 500 'index: 4' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_5=$(pacmd list-sinks | grep -A 500 'index: 5' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_6=$(pacmd list-sinks | grep -A 500 'index: 6' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_7=$(pacmd list-sinks | grep -A 500 'index: 7' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_8=$(pacmd list-sinks | grep -A 500 'index: 8' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_9=$(pacmd list-sinks | grep -A 500 'index: 9' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_10=$(pacmd list-sinks | grep -A 500 'index: 10' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_11=$(pacmd list-sinks | grep -A 500 'index: 11' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_12=$(pacmd list-sinks | grep -A 500 'index: 12' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_13=$(pacmd list-sinks | grep -A 500 'index: 13' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_14=$(pacmd list-sinks | grep -A 500 'index: 14' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_15=$(pacmd list-sinks | grep -A 500 'index: 15' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_16=$(pacmd list-sinks | grep -A 500 'index: 16' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_17=$(pacmd list-sinks | grep -A 500 'index: 17' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+SINK_NAME_18=$(pacmd list-sinks | grep -A 500 'index: 18' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
+
+function MISSING_PACKAGES {
+pacman -Q pulsemixer paprefs pulseaudio pulseaudio-equalizer bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth > error.txt 2>&1
+MISSING_PKGS=$(cat error.txt | grep error | cut -d ' ' -f 3 | sed -e 's/^.//' -e 's/.$//')
+if [[ -z "$MISSING_PKGS" ]]; then rm error.txt; else
+echo -e ${bold}${uline}${red}"Missing Packages:"${reset}
+echo -e ${yellow}"$MISSING_PKGS"${reset}
+read -r -p "Install Missing Packages? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) sudo pacman -S $(echo $(echo "$MISSING_PKGS")) && rm error.txt ;;
+    [nN][oO]|[nN]) rm error.txt ;; *) echo "Invalid input...";exit 1;;esac;fi
+}
+
+function REPLACE_LONG_NAME_1 {
+
+        #  This will only display if on sinks 1-9.. you need to make a whole other
+        #  function for sinks 9-18, but thats unrealistic that you'll need to.
+
+# Give Sink Name Color
+SHORT_NAME_TEMP_1=$(echo -e ${yellow} && echo "Simultaneous Output" && echo -e ${reset})
+echo "$SHORT_NAME_TEMP_1" > /tmp/easy-audio/easy-audio_short-name_1.tmp
+# Add Quotations
+sed 's/\bSimultaneous Output\b/"Simultaneous Output"/' -i /tmp/easy-audio/easy-audio_short-name_1.tmp
+# Shortened name no color
+SHORT_NAME_TEMP_2=$(sed -n 2p /tmp/easy-audio/easy-audio_short-name_1.tmp && cat /tmp/easy-audio/easy-audio_short-name_1.tmp) #&& rm /tmp/easy-audio/easy-audio_short-name_1.tmp
+# Shortened name with color
+SHORTENED_NAME=$(echo $SHORT_NAME_TEMP_2 | cut -c 30-100)
+# Here...  sink number and Shortened sink name with color
+for_sed=$(echo -e ${linenumber}${yellow}${SHORTENED_NAME}${reset})
+linenumber_nocolor=$(echo $linenumber | cut -c 8)
+#Line numbers to change (color)
+sink0=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m0" | cut -c 1)
+sink1=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m1" | cut -c 1)
+sink2=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m2" | cut -c 1)
+sink3=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m3" | cut -c 1)
+sink4=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m4" | cut -c 1)
+sink5=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m5" | cut -c 1)
+sink6=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m7" | cut -c 1)
+sink7=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m8" | cut -c 1)
+sink8=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m9" | cut -c 1)
+sink9=$(cat /tmp/easy-audio/easy-audio_sink-2.tmp  | grep -n "91m10" | cut -c 1)
+#sink10=$(cat /tmp/easy-audio/easy-audio_sink-list_2.tmp  | grep -n "91m0" | cut -c 1)
+#sink11=$(cat /tmp/easy-audio/easy-audio_sink-list_2.tmp  | grep -n "91m1" | cut -c 1)
+# change $linenumber to sinknumber
+if [[ ${linenumber_nocolor} = 0 ]]; then sedline="$sink0";fi
+if [[ ${linenumber_nocolor} = 1 ]]; then sedline="$sink1";fi
+if [[ ${linenumber_nocolor} = 2 ]]; then sedline="$sink2";fi
+if [[ ${linenumber_nocolor} = 3 ]]; then sedline-"$sink3";fi
+if [[ ${linenumber_nocolor} = 4 ]]; then sedline="$sink4";fi
+if [[ ${linenumber_nocolor} = 5 ]]; then sedline="$sink5";fi
+if [[ ${linenumber_nocolor} = 6 ]]; then sedline="$sink6";fi
+if [[ ${linenumber_nocolor} = 7 ]]; then sedline="$sink7";fi
+if [[ ${linenumber_nocolor} = 8 ]]; then sedline="$sink8";fi
+if [[ ${linenumber_nocolor} = 9 ]]; then sedline="$sink9";fi
+if [[ ${linenumber_nocolor} = 10 ]]; then sedline="$sink10";fi
+###### THIS TURNS ON THE SWITCHING OF LONG NAME 1 ##########
+sed -i ''"${sedline}"'s/.*/'"$for_sed"'/' /tmp/easy-audio/easy-audio_sink-2.tmp
+###########################################################
+# Display Sink List on script startup if long_name_1 brought you here
+cat /tmp/easy-audio/easy-audio_sink-2.tmp
+}
+
+function LONG_NAME_1 {
+output1=$(cat /tmp/easy-audio/easy-audio_sink-1.tmp | grep -e "91m0" -e "91m1" -e "91m2" -e "91m3" -e "91m4" -e "91m5" -e "91m6" -e "91m7" -e "91m8" -e "91m9" -e "91m10" -e "91m11" | grep "Simultaneous output" | cut -d ' ' -f 1,2,3)
+linenumber=$(echo "$output1" | cut -d ' ' -f 1)
+# Sink Name (color)
+name=$(echo "$output1" | cut -d ' ' -f 2,3)
+# Sink Name (no color)
+echo "$name" > /tmp/easy-audio/easy-audio_sink-3.tmp
+new=$(cut -c 9-27 /tmp/easy-audio/easy-audio_sink-3.tmp)
+if [[ "$new" = "Simultaneous output" ]]; then REPLACE_LONG_NAME_1;else echo 'no long name.. pops up when some kind of error' && CURRENT_SINK_NAMES;fi # breaks at 10 sinks (echos no)
+}
+
+# Sinks 0-9
+function CURRENT_SINK_NAMES {
+echo -e ${red}"$SINK_NUMBER_0"${reset} ${yellow}"$SINK_NAME_0"${reset} > /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_1"${reset} ${yellow}"$SINK_NAME_1"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_2"${reset} ${yellow}"$SINK_NAME_2"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_3"${reset} ${yellow}"$SINK_NAME_3"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_4"${reset} ${yellow}"$SINK_NAME_4"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_5"${reset} ${yellow}"$SINK_NAME_5"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_6"${reset} ${yellow}"$SINK_NAME_6"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_7"${reset} ${yellow}"$SINK_NAME_7"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_8"${reset} ${yellow}"$SINK_NAME_8"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+echo -e ${red}"$SINK_NUMBER_9"${reset} ${yellow}"$SINK_NAME_9"${reset} >> /tmp/easy-audio/easy-audio_sink-1.tmp &&
+cat /tmp/easy-audio/easy-audio_sink-1.tmp | grep -e "91m0" -e "91m1" -e "91m2" -e "91m3" -e "91m4" -e "91m5" -e "91m6" -e "91m7" -e "91m8" -e "91m9" -e "91m10" -e "91m11" -e "91m12" #&& rm /tmp/easy-audio/easy-audio_sink-1.tmp
+}
+
+# Sinks 10-18
+function CURRENT_SINK_NAMES_2 {
+touch /tmp/easy-audio/easy-audio_sink-list_2.tmp
+echo -e ${red}"$SINK_NUMBER_10"${reset} ${yellow}"$SINK_NAME_10"${reset} > /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_11"${reset} ${yellow}"$SINK_NAME_11"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_12"${reset} ${yellow}"$SINK_NAME_12"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_13"${reset} ${yellow}"$SINK_NAME_13"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_14"${reset} ${yellow}"$SINK_NAME_14"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_15"${reset} ${yellow}"$SINK_NAME_15"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_16"${reset} ${yellow}"$SINK_NAME_16"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_17"${reset} ${yellow}"$SINK_NAME_17"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+echo -e ${red}"$SINK_NUMBER_18"${reset} ${yellow}"$SINK_NAME_18"${reset} >> /tmp/easy-audio/easy-audio_sink-list_2.tmp &&
+cat /tmp/easy-audio/easy-audio_sink-list_2.tmp | grep -e "91m0" -e "91m1" -e "91m2" -e "91m3" -e "91m4" -e "91m5" -e "91m6" -e "91m7" -e "91m8" -e "91m9" -e "91m10" -e "91m11" -e "91m12" #&& rm /tmp/easy-audio/easy-audio_sink-list_2.tmp
+}
+
+# possibly duplicated
+function TURN_ON_BLUETOOTH_PROMPT {
+read -r -p "Turn on Bluetooth? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) rfkill unblock bluetooth ;;
+    [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";;esac
+}
+
+function _RAW_LIST_ {
+# Displays all Sinks and Names in case the script breaks.. must be selected from main menu (l)
+
+sink_2_=$(pacmd list-sinks | grep -B2 index | grep -e '2' | grep -v '12')
+sink_0_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 0" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 1p)
+sink_1_=$(pacmd list-sinks | grep index | grep -e '1' | grep -v '10' | grep -v '11' | grep -v '12' | grep -v '13' | grep -v '14' | grep -v '15' | grep -v '16' | grep -v '17' | grep -v '18' | sed 's/^.*\(.\{1\}\)$/\1/')
+#sink_1_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 1" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 2p)
+#sink_2_=$(pacmd list-sinks | grep -B50 index | grep index | grep -e "2" | grep -v "12" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 3p)
+sink_3_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 3" && pacmd list-sinks | grep -A200 index | grep device.description | sed -n 4p)
+sink_4_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 4" && pacmd list-sinks | grep -A200 index | grep device.description | sed -n 5p)
+sink_5_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 5" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 6p)
+sink_6_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 6" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 7p)
+sink_7_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 7" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 8p)
+sink_8_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 8" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 9p)
+sink_9_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 9" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 10p)
+sink_10_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 10" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 11p)
+echo "$sink_0_";echo "$sink_1_";echo "$sink_2_";echo "$sink_3_";echo "$sink_4_";echo "$sink_5_";echo "$sink_6_";echo "$sink_7_";echo "$sink_8_";echo "$sink_9_"; echo "$sink_10_"
+}
+
+function _CHANGE_SINK_PROMPT_FULL_ {
+#echo " - - - - - - - - - - - - - "
+echo -e ${bold}"------------ Bluetooth --------------"${reset}
+CHECK_SOFT_BLOCK
+echo -e ${bold}"Bluetooth Status: ${cyan}$BLUETOOTH_SOFT_STATUS"${reset}
+$CONNECTED_BT_NAME
+echo -e ${blue}"b"${reset}":"${blue}" bluetooth"${reset}
+echo -e ${bold}"------------ Equalizer --------------"${reset}
+#echo " - - - - - - - - - - - - - "
+#_STATUS_;_CHECK_CONFIG_
+_CHECK_CONFIG_
+echo -e ${cyan}"e"${reset}":"${cyan}" equalizer settings"${reset}
+echo " - - - - - - - - - - - - - "
+#echo -e "l: list sinks if broken"
+echo -e ${yellow}"m"${reset}":"${yellow}" Volume Mixer"${reset}
+echo "r: reset sink numbers"
+echo "q: quit"
+_CHANGE_SINK_PROMPT_END_
+}
+
+function _CHANGE_SINK_PROMPT_MINIMAL_ {
+#echo " - - - - - - - - - - - - - "
+echo -e ${blue}"b"${reset}":"${blue}" bluetooth"${reset}
+#echo " - - - - - - - - - - - - - "
+echo -e ${cyan}"e"${reset}":"${cyan}" equalizer settings"${reset}
+echo " - - - - - - - - - - - - - "
+echo -e ${yellow}"m"${reset}":"${yellow}" Volume Mixer"${reset}
+echo "r: reset sink numbers"
+echo "q: quit"
+_CHANGE_SINK_PROMPT_END_
+}
+
+function _CHANGE_SINK_PROMPT_END_ {
+echo;read -r -p "Please Select a Sink to Switch to: " NUMBER
+if [[ $NUMBER = 0 ]]; then UPDATED_SINK="$SINK_NAME_0";pacmd set-default-sink 0 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && ./easy-audio;fi
+#&& echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 1 ]]; then UPDATED_SINK="$SINK_NAME_1";pacmd set-default-sink 1 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 2 ]]; then UPDATED_SINK="$SINK_NAME_2";pacmd set-default-sink 2 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 3 ]]; then UPDATED_SINK="$SINK_NAME_3";pacmd set-default-sink 3 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 4 ]]; then UPDATED_SINK="$SINK_NAME_4";pacmd set-default-sink 4 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 5 ]]; then UPDATED_SINK="$SINK_NAME_5";pacmd set-default-sink 5 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 6 ]]; then UPDATED_SINK="$SINK_NAME_6";pacmd set-default-sink 6 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 7 ]]; then UPDATED_SINK="$SINK_NAME_7";pacmd set-default-sink 7 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 8 ]]; then UPDATED_SINK="$SINK_NAME_8";pacmd set-default-sink 8 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 9 ]]; then UPDATED_SINK="$SINK_NAME_9";pacmd set-default-sink 9 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 10 ]]; then UPDATED_SINK="$SINK_NAME_10";pacmd set-default-sink 10 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 11 ]]; then UPDATED_SINK="$SINK_NAME_11";pacmd set-default-sink 11 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 12 ]]; then UPDATED_SINK="$SINK_NAME_12";pacmd set-default-sink 12 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 13 ]]; then UPDATED_SINK="$SINK_NAME_13";pacmd set-default-sink 13 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 14 ]]; then UPDATED_SINK="$SINK_NAME_14";pacmd set-default-sink 14 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 15 ]]; then UPDATED_SINK="$SINK_NAME_15";pacmd set-default-sink 15 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 16 ]]; then UPDATED_SINK="$SINK_NAME_16";pacmd set-default-sink 16 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 17 ]]; then UPDATED_SINK="$SINK_NAME_17";pacmd set-default-sink 17 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = 18 ]]; then UPDATED_SINK="$SINK_NAME_18";pacmd set-default-sink 18 && echo && echo -e ${yellow}"Audio switched to"${reset} ${red}"Sink $NUMBER"${reset} ${yellow}":"${reset} ${green}"$UPDATED_SINK"${reset} && echo && _MAIN_CHANGE_SINK_;fi
+if [[ $NUMBER = b ]]; then echo;BLUETOOTH_FULL;fi
+if [[ $NUMBER = e ]]; then EQUALIZER_FULL;fi
+if [[ $NUMBER = l ]]; then _RAW_LIST_;exit;fi
+if [[ $NUMBER = m ]]; then pulsemixer && _MAIN_CHANGE_SINK_ ;fi
+# add this functionality EQUALIZER_FULL
+#pacmd set-default-sink ${desired_sink} pulseaudio-equalizer disable && pulseaudio-equalizer enable
+if [[ $NUMBER = r ]]; then echo 'Restarting PulseAudio..' && pulseaudio -k & sleep 2 && pulseaudio --start && TURN_ON_BLUETOOTH_PROMPT && echo 'Please Pause and Unpause your music';fi
+if [[ $NUMBER = q ]]; then exit 1;fi
+}
+
+
+function FIND_LADSPA {
+cat /tmp/easy-audio/easy-audio_sink-1.tmp | grep LADSPA | cut -f 1 -d ' ' > ladspa_number.tmp
+FIND_LADSPA_SINK_NUMBER=$(cat ladspa_number.tmp | cut -c 8)
+echo $FIND_LADSPA_NUMBER
+}
+
+function BLUETOOTH_SINK_1 {
+echo 'ughh'
+}
+# BLUETOOTH_FULL Function HERE
+#function BLUETOOTH_FULLL {
+#echo 'im bluetooth'
+#}
+
+###############################################################
+########################        ###############################
+######################   SCRIPT   #############################
+#####################              ############################
+###############################################################
+function _MAIN_CHANGE_SINK_ {
+echo -e ${bold}"---------- Current Sink -------------"${reset}
+echo -e "Sink" ${bold}${green}"$CURRENT_SINK"${reset}":" ${green}"$CURRENT_SINK_NAME"${reset}
+echo -e ${bold}"--------- Available Sinks -----------"${reset}
+CURRENT_SINK_NAMES > /tmp/easy-audio/easy-audio_sink-2.tmp
+LONG_NAME_1
+CURRENT_SINK_NAMES_2
+#_STATUS_;_CHECK_CONFIG_
+#BLUETOOTH_QUICK
+#EQUALIZER_QUICK
+_CHANGE_SINK_PROMPT_FULL_
+}
+
+function _MAIN_CHANGE_SINK_MINIMAL_ {
+echo -e ${bold}"---------- Current Sink -------------"${reset}
+echo -e "Sink" ${bold}${green}"$CURRENT_SINK"${reset}":" ${green}"$CURRENT_SINK_NAME"${reset}
+echo -e ${bold}"--------- Available Sinks -----------"${reset}
+CURRENT_SINK_NAMES > /tmp/easy-audio/easy-audio_sink-2.tmp
+LONG_NAME_1
+CURRENT_SINK_NAMES_2
+#_STATUS_;_CHECK_CONFIG_
+#BLUETOOTH_QUICK
+#EQUALIZER_QUICK
+_CHANGE_SINK_PROMPT_MINIMAL_
+}
+#function _MAIN_CHANGE_SINK_FULL_ {
+
+
+function CHANGE_SINK_FULL {
+_MAIN_CHANGE_SINK_
+}
+
+#############################################################
+################# END CHANGE SINK ###########################
+#############################################################
+
+
+
+################################# HELP SCREEN #################################
+
+#Help()
+function HELP_FUNCTION {
+   # Display Help
+   echo
+   echo -e ${cyan}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+   echo
+   echo -e ${yellow}"                  \e[1mHelp Screen for easy-audio\e[0m"${reset}
+   echo
+   echo "Syntax: [ |-a|-c|-h|-l|-s|-v| ]"
+   echo
+   echo -e ${green}"Option:    Description:"${reset}
+   echo
+   echo "-a  ~~~~~  Switch to Next Audio Sink"
+   echo "-b  -----  Bluetooth Main Menu"
+   echo "-c  ~~~~~  Connect to Bluetooth Device"
+   echo "-d  ~~~~~  Change Audio Device Sink (Output)"
+   echo "-e  -----  Equalizer Main Menu"
+   echo "-f  -----  Connect to Equalizer Favorite 1"
+   echo "-h  ~~~~~  Print this Help."
+   echo "-l  ~~~~~  List Available Audio Devices"
+   echo "-s  ~~~~~  Scan Devices"
+   echo "-v  ~~~~~  Print software version and exit."
+   echo
+   echo -e ${cyan}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+}
+
+################################# Flag options #################################
+# Get the options
+while getopts ":abcdefhlsv" option; do
+   case $option in
+      a) # Switch Audio Sink
+        _AUDIO_SWITCHER_
+         exit;;
+      b) # Bluetooth Main Menu
+        BLUETOOTH_FULL
+         exit;;
+      c) # Connect to Device
+        _PAIR_DEVICE_2_
+         exit;;
+      d) # Change Audio Device
+        _MAIN_CHANGE_SINK_MINIMAL_
+         exit;;
+      e) # Equalizer Main Menu
+        EQUALIZER_FULL
+         exit;;
+      f) # Connect to Equalizer Favorite 1
+         echo 'hi'
+         exit;;
+      h) # display Help
+         HELP_FUNCTION
+         exit;;
+      l) # List Available Devices
+         _STATUS_;_CHECK_CONFIG_
+         exit;;
+      s) # Scan Devices
+         echo 'scanning.. not'
+         exit;;
+      v) # version number
+        echo "0.3"
+         exit;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         exit;;
+   esac
+done
+
+
+
+
+function _MAIN_START_ {
+#_MAIN_CHANGE_SINK_
+#BLUETOOTH_QUICK
+#EQUALIZER_QUICK
+MISSING_PACKAGES
+UPDATE_CUSTOM_SUMS
+#CHANGE_SINK_FULL
+_MAIN_CHANGE_SINK_
+_CHANGE_SINK_PROMPT_FULL_
+
+}
+echo
+_MAIN_START_

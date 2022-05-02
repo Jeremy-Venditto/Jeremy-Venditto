@@ -1,0 +1,236 @@
+#!/bin/bash
+
+#     __                         _   __            ___ __  __
+# __ / /__ _______ __ _  __ __  | | / /__ ___  ___/ (_) /_/ /____
+#/ // / -_) __/ -_)  ' \/ // /  | |/ / -_) _ \/ _  / / __/ __/ _ \
+#\___/\__/_/  \__/_/_/_/\_, /   |___/\__/_//_/\_,_/_/\__/\__/\___/
+#                      /___/
+
+#Jeremy Venditto
+#https://github.com/jeremy-venditto
+#https://jeremyvenditto.info
+
+# required packages
+#dig macchanger net-tools wireless_tools nmap wireshark-qt whois nethogs iproute2? iw netstat
+
+red="\e[0;91m"
+blue="\e[0;94m"
+cyan="\e[0;96m"
+magenta="\e[0;95m"
+expand_bg="\e[K"
+blue_bg="\e[0;104m${expand_bg}"
+red_bg="\e[0;101m${expand_bg}"
+green_bg="\e[0;102m${expand_bg}"
+green="\e[0;92m"
+white="\e[0;97m"
+yellow="\e[0;93m"
+bold="\e[1m"
+uline="\e[4m"
+reset="\e[0m"
+
+_IP_RANGE=$(nmcli -t -f active | grep route4 | grep -v default | cut -d ' ' -f 2)
+
+#RED="tput setaf 1";GREEN="tput setaf 2";YELLOW="tput setaf 3";MAGENTA="tput setaf 5";CYAN="tput setaf 6";WHITE="tput setaf 7"
+_AVAILABLE_INTERFACES_=$(echo -e ${yellow}"Available Interfaces:"${reset};echo -e ${cyan};ifconfig | grep flags | grep -wv lo |  cut -d ' ' -f 1 | sed s'/.$//' )
+_CHECK_INTERFACE_=$(ip link | awk '/state UP/{print$2}' | awk '{gsub(/:$/,""); print}')
+_CHECK_MAC_ADDRESS_=$(ifconfig | grep -A 3 $_CHECK_INTERFACE_ | grep ether | cut -d ' ' -f 10)
+_CHECK_GATEWAY_=$(ip r | grep dhcp | cut -d ' ' -f 3)
+_CHECK_DNS_=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2 | sed 's/NOTE:/NOTE: More than 3 nameservers../g' | sed 's/The/Entries below are unused:/g')
+_CHECK_IPV4_PRIVATE_=$(ip r | grep $_CHECK_INTERFACE_ | grep kernel | cut -d ' ' -f 9)
+_CHECK_IPV4_=$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)
+ WIFI_AP_NAME=$(iwconfig $_CHECK_INTERFACE_ | grep ESSID | cut -d ' ' -f9-20 | cut -c 7-100 | sed 's/..$//' | sed 's/^.\(.*\).$/\1/')
+#WIFI_AP_NAME=$(iwconfig "$_CHECK_INTERFACE_" | grep ESSID | cut -d ' ' -f9 | cut -c 7-100)
+WIFI_AP_MAC=$(iwconfig "$_CHECK_INTERFACE_" | grep Access | cut -d ' ' -f18)
+			# checks if IP6 is private or public
+			#a=$(ifconfig | grep 64 |  awk '/inet6/{print $2}' | cut -c 1-4);if [[ "$a" = "fe80" ]]; then echo 'pirvate';else echo 'public';fi
+
+			#IPV6=$(ip addr show dev $_CHECK_INTERFACE_ | sed -e's/^.*inet6 \([^ ]*\)\/.*$/\1/;t;d'
+			#_CHECK_IPV6_PRIVATE_=$($CYAN;ifconfig $_CHECK_INTERFACE_ |  awk '/inet6/{print $2}')
+_CHECK_IPV6_PRIVATE_=$(ifconfig | grep 64 |  awk '/inet6/{print $2}')
+
+_VPN_NAME_=$(nmcli | grep "VPN connection" | cut -d ' ' -f 1)
+_CHECK_VPN_=$(nmcli -o | grep vpn > /dev/null; if [[ $? = 0 ]]; then echo -e ${cyan}"Connected to $_VPN_NAME_"${reset}; else echo -e ${yellow}"Not Connected"${reset}; fi )
+
+
+
+_CHECK_CURRENT_DEVICE_MAC_ADDRESS_=$(ifconfig | grep -A 3 $_CHECK_INTERFACE_ | grep ether | cut -d ' ' -f 10)
+_CHECK_PERMANENT_DEVICE_MAC_ADDRESS_=$(macchanger -s $_CHECK_INTERFACE_ | grep Permanent | cut -d ' ' -f 3)
+
+function MISSING_PACKAGES {
+pacman -Q pulsemixer paprefs pulseaudio pulseaudio-equalizer bluez bluez-libs bluez-tools bluez-utils p
+MISSING_PKGS=$(cat error.txt | grep error | cut -d ' ' -f 3 | sed -e 's/^.//' -e 's/.$//')
+if [[ -z "$MISSING_PKGS" ]]; then rm error.txt; else
+echo -e ${bold}${uline}${red}"Missing Packages:"${reset}
+echo -e ${yellow}"$MISSING_PKGS"${reset}
+read -r -p "Install Missing Packages? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) sudo pacman -S $(echo $(echo "$MISSING_PKGS")) && rm error.txt ;;
+    [nN][oO]|[nN]) rm error.txt ;; *) echo "Invalid input...";exit 1;;esac;fi
+}
+
+
+function CHANGE_MAC {
+read -r -p "Change Device Mac Address? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) sudo ip link set dev $_CHECK_INTERFACE_ down  && sudo macchanger -a $_CHECK_INTERFACE_ && sudo ip link set dev $_CHECK_INTERFACE_ up;sleep 2; ./net-helper;;
+    [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";exit 1;;esac
+}
+
+
+function DISCONNECT {
+nmcli c down "$WIFI_AP_NAME"
+}
+function SCAN_FOR_AP {
+echo 'hi'
+}
+
+function WHOIS_LOOKUP {
+echo "Enter Website URL"
+read -r URL
+whois $URL
+}
+function _NMAP_LOCAL_NETWORK_ {
+#echo 'Would you like to scan your local network?'
+#read -r -p "[Y/n] " input
+#case $input in
+#    [yY][eE][sS]|[yY])
+
+_TEMP_FILE_1_="$PWD/nmap_local.tmp1"
+_IP_RANGE_=$(nmcli -t -f active | grep route4 | grep -v default | cut -d ' ' -f 2 | sed -n 1p)
+echo "Scanning All ports for $_IP_RANGE_ ..."
+tput setaf 2;nmap -sn $_IP_RANGE_ > $_TEMP_FILE_1_
+_NUMBER_OF_CONNECTED_DEVICES_=$(cat $_TEMP_FILE_1_ | grep done | cut -d ' ' -f 6 | sed 's/^.\{,1\}//')
+_NAMES_OF_CONNECTED_DEVICES_=$(cat $_TEMP_FILE_1_ | grep for | cut -d ' ' -f 5-6)
+echo;tput setaf 1;echo "there are $_NUMBER_OF_CONNECTED_DEVICES_ devices connected to this network"
+tput setaf 3;echo "$_NAMES_OF_CONNECTED_DEVICES_"; rm $_TEMP_FILE_1_ > /dev/null 2<&1
+echo;tput setaf 6;echo "Run Wireshark?";tput setaf 7
+read -r -p "[Y/n] " input
+case $input in
+    [yY][eE][sS]|[yY])
+wireshark
+ ;;
+    [nN][oO]|[nN])
+       ;;
+    *)
+ echo "Invalid input..."
+ exit 1
+ ;;
+esac
+echo "Scan open ports?"
+read -r -p "[Y/n] " input
+case $input in
+    [yY][eE][sS]|[yY])
+echo 'scanning open ports, this may take a while...'
+nmap -sT $_IP_RANGE_
+ ;;
+    [nN][oO]|[nN])
+       ;;
+    *)
+ echo "Invalid input..."
+ exit 1
+ ;;
+esac
+#main prompt no
+# ;;
+#    [nN][oO]|[nN])
+# echo "No"
+#       ;;
+#    *)
+# echo "Invalid input..."
+# exit 1
+# ;;
+#esac
+}
+
+function LIST_2_LOCAL_SETTINGS {
+PS3='Please enter your choice: '
+options=("Router Configuration" "Scan for Access Points" "Disconnect from WiFi Network" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Router Configuration")
+	xdg-open "http://${_CHECK_GATEWAY_}" > /dev/null 2>&1
+            ;;
+        "Scan for Access Points")
+        SCAN_FOR_AP
+            ;;
+        "Disconnect from WiFi Network")
+        "nmcli c down $WIFI_AP_NAME"
+#	DISCONNECT
+           ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+
+}
+
+
+function LIST_1 {
+PS3='Please enter your choice: '
+options=("Scan Local Network" "Change Mac Address" "Wireshark" "WHOIS Lookup" "Nethogs" "Local Settings" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Scan Local Network")
+	_NMAP_LOCAL_NETWORK_
+            ;;
+        "Change Mac Address")
+	CHANGE_MAC
+            ;;
+        "Wireshark")
+	wireshark
+            ;;
+	"WHOIS Lookup")
+	WHOIS_LOOKUP
+	    ;;
+	"Nethogs")
+	nethogs
+	    ;;
+	"Local Settings")
+	LIST_2_LOCAL_SETTINGS
+	    ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+}
+
+function _MAIN_ {
+ping -c 1 -q archlinux.org > /dev/null 2>&1
+if [[ $? = 0 ]]; then
+echo
+echo -e "~~~~~~~~~~~~~${bold}INTERNET${reset}~~~~~~~~~~~~~~~~~~~";
+echo -e ${green}"You are connected to the internet"${reset}
+echo -e "~~~~~~~~~~~~~${bold}INTERFACE${reset}~~~~~~~~~~~~~~~~~~";
+echo -e ${cyan}"Interface: $_CHECK_INTERFACE_" ${reset}
+echo -e "~~~~~~~~~~~~~${bold}ROUTER_IP${reset}~~~~~~~~~~~~~~~~~~" ${reset}
+echo -e ${bold}"Access Point Name: "${reset}${green}$WIFI_AP_NAME${reset}
+echo -e ${bold}"Access Point MAC: "${reset}$WIFI_AP_MAC
+echo -e ${yellow}"Gateway: $_CHECK_GATEWAY_" ${reset}
+echo -e "~~~~~~~~~~~~~${bold}PRIVATE_IP${reset}~~~~~~~~~~~~~~~~~";
+echo -e ${bold}"Local IPv4: ${blue}$_CHECK_IPV4_PRIVATE_"${reset}
+#echo -e ${bold}"Local IPv6: ${blue}$_CHECK_IPV6_PRIVATE_"${reset}
+echo -e "~~~~~~~~~~~~~${bold}MAC_ADDRESS${reset}~~~~~~~~~~~~~~~~";
+echo -e ${red}"Current MAC Address: ${yellow} $_CHECK_CURRENT_DEVICE_MAC_ADDRESS_"${reset}
+echo -e ${bold}"Permanent MAC Addres: ${green}$_CHECK_PERMANENT_DEVICE_MAC_ADDRESS_"${reset}
+#echo "MAC Spoofing?"
+echo -e "~~~~~~~~~~~~~${bold}VPN_STATUS${reset}~~~~~~~~~~~~~~~~~"
+echo -e ${magenta}"VPN: $_CHECK_VPN_"${reset}
+echo -e "~~~~~~~~~~~~~${bold}DNS_SERVERS${reset}~~~~~~~~~~~~~~~~";
+echo -e ${yellow}"DNS (in attempt order): "${reset}
+echo -e "$_CHECK_DNS_"
+echo -e "~~~~~~~~~~~~~${bold}PUBLIC_IP${reset}~~~~~~~~~~~~~~~~~~";
+echo -e "${red}Public IPV4:${reset} ${green}$_CHECK_IPV4_"${reset}
+echo -e "${red}Public IPV6:${reset} ${green}$_CHECK_IPV6_"${reset}
+echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+LIST_1
+#$WHITE;echo "MAC Address: $_CHECK_MAC_ADDRESS_";
+
+#_NMAP_LOCAL_NETWORK_;
+else
+echo -e ${red}'You are NOT connected to the internet'${reset};echo;echo -e ${yellow} $_AVAILABLE_INTERFACES_ ${reset};fi;}
+_MAIN_; LIST_2_LOCAL_SETTINGS
+

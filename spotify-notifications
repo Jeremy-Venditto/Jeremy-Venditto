@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#     __                         _   __            ___ __  __
+# __ / /__ _______ __ _  __ __  | | / /__ ___  ___/ (_) /_/ /____
+#/ // / -_) __/ -_)  ' \/ // /  | |/ / -_) _ \/ _  / / __/ __/ _ \
+#\___/\__/_/  \__/_/_/_/\_, /   |___/\__/_//_/\_,_/_/\__/\__/\___/
+#                      /___/
+
+#Jeremy Venditto
+#https://github.com/jeremy-venditto
+#https://jeremyvenditto.info
+
+# required packages
+
+  # Toggle Spotify Notifications on Linux with this script.. add to a keybinding
+
+        # Define user directory and prefs file
+USERNAME=$(ls "$HOME/.config/spotify/Users")
+PREFS=$(echo "$HOME/.config/spotify/Users/${USERNAME}/prefs")
+
+        # Check if ui.track_notifications is available in config, add if not (set to enabled, will be disabled when script is executed)
+grep "ui.track_notifications_enabled=" $PREFS > /dev/null || echo "ui.track_notifications_enabled=true" >> $PREFS
+
+        # Toggle ui.track_notifications from enabled/disabled
+grep "ui.track_notifications_enabled=false" $PREFS > /dev/null && sed -i 's/ui.track_notifications_enabled=false/ui.track_notifications_enabled=true/g' $PREFS || sed -i 's/ui.track_notifications_enabled=true/ui.track_notifications_enabled=false/g' $PREFS
+
+        # Notificaions have been enabled/disabled
+NOTIFY=$(cat $PREFS | grep "ui.track_notifications" | cut -c 32-36)
+	     # Terminal Notification
+if [[ "$NOTIFY" = true ]]; then echo -e "\e[1mSpofify notifications have been enabled\e[0m"; else echo -e "\e[1mSpotify notifications have been disabled\e[0m";fi
+	     # Sdout Notification (popup)
+if [[ "$NOTIFY" = true ]]; then notify-send 'Spotify Notifications' '           Enabled';else notify-send 'Spotify Notifications' '           Disabled';fi
+
+        #if spotify not playing; then exit; if spotify is playing, kill spotify process, start new process
+aa=$(pgrep spotify);if [[ -z $aa ]];then exit 1 ;else echo 'Restarting Spotify'
+killall spotify > /dev/null 2>&1 && sleep 2 && spotify > /dev/null 2>&1 &
+             # start playing music immediately after restart (requires mpDris2 and playerctl)
+sleep 4 && dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause > /dev/null 2>&1
+fi
