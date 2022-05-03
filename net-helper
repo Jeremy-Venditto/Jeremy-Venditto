@@ -38,9 +38,9 @@ _CHECK_GATEWAY_=$(ip r | grep dhcp | cut -d ' ' -f 3)
 _CHECK_DNS_=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2 | sed 's/NOTE:/NOTE: More than 3 nameservers../g' | sed 's/The/Entries below are unused:/g')
 _CHECK_IPV4_PRIVATE_=$(ip r | grep $_CHECK_INTERFACE_ | grep kernel | cut -d ' ' -f 9)
 _CHECK_IPV4_=$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)
- WIFI_AP_NAME=$(iwconfig $_CHECK_INTERFACE_ > /dev/null 2&>1 | grep ESSID | cut -d ' ' -f9-20 | cut -c 7-100 | sed 's/..$//' | sed 's/^.\(.*\).$/\1/')
+ WIFI_AP_NAME=$(iwconfig $_CHECK_INTERFACE_ 2>/dev/null | grep ESSID | cut -d ' ' -f9-20 | cut -c 7-100 | sed 's/..$//' | sed 's/^.\(.*\).$/\1/')
 #WIFI_AP_NAME=$(iwconfig "$_CHECK_INTERFACE_" | grep ESSID | cut -d ' ' -f9 | cut -c 7-100)
-WIFI_AP_MAC=$(iwconfig "$_CHECK_INTERFACE_" > /dev/null 2&>1 | grep Access | cut -d ' ' -f18)
+WIFI_AP_MAC=$(iwconfig "$_CHECK_INTERFACE_" 2>/dev/null | grep Access | cut -d ' ' -f18)
 			# checks if IP6 is private or public
 			#a=$(ifconfig | grep 64 |  awk '/inet6/{print $2}' | cut -c 1-4);if [[ "$a" = "fe80" ]]; then echo 'pirvate';else echo 'public';fi
 
