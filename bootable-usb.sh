@@ -24,7 +24,7 @@ echo -e "${magenta}~~~~~~~~${reset}${bold} Potential Files ${reset}${magenta}~~~
 echo -e "$HOME/Downloads/"${cyan}; ls ~/Downloads | grep .iso | grep -v .sig | grep -v .torrent; ls ~/Downloads > /dev/null 2>&1 | grep .img | grep -v .xz
 echo -e ${reset}"$HOME/downloads/"${cyan};ls ~/downloads | grep .iso | grep -v .sig | grep -v .torrent; ls ~/downloads | grep .img | grep -v .xz
 echo -e ${reset}"$HOME/"${cyan}; ls ~ | grep .iso | grep -v .sig | grep -v .torrent; ls ~/ | grep .img | grep -v .xz
-echo -e ${magenta}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";echo -e ${yellow}"What is the file you would like to use?"${reset}
+echo -e ${magenta}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";echo -e ${yellow}"What is the file you would like to use?"${reset}
 read -rp "" -e -i "$HOME/" FILE
 # Get Device
 echo;lsblk -f;echo;echo -e ${yellow}"What is the device you wish to burn the bootable ISO file to?"${reset}

@@ -1,5 +1,19 @@
 #!/bin/bash
 
+#     __                         _   __            ___ __  __
+# __ / /__ _______ __ _  __ __  | | / /__ ___  ___/ (_) /_/ /____
+#/ // / -_) __/ -_)  ' \/ // /  | |/ / -_) _ \/ _  / / __/ __/ _ \
+#\___/\__/_/  \__/_/_/_/\_, /   |___/\__/_//_/\_,_/_/\__/\__/\___/
+#                      /___/
+
+#Jeremy Venditto
+#https://github.com/jeremy-venditto
+#https://jeremyvenditto.info
+
+# Enables sudo on any system
+
+# STILL WORKING ON THIS I KNOW I AM MISSING THINGS
+
 function configure_sudo {
 declare -A osInfo;
 osInfo[/etc/redhat-release]=yum
