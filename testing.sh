@@ -58,7 +58,7 @@ mv ~/jeremy-venditto/wallpaper/ ~/
 
 ### INSTALL PACKAGES
 function LAPTOP_PACKAGES {
-#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
 sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/laptop-only.txt
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si
@@ -66,7 +66,7 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur-laptop.txt
 }
 
 function DESKTOP_PACKAGES {
-#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
 sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/laptop-only.txt
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si
@@ -74,7 +74,7 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur-desktop.txt
 }
 
 function VIRTUAL_PACKAGES {
-#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
 sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/vm-only.txt
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si
@@ -82,11 +82,10 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur-vm.txt
 }
 
 #sudo pacman -S autoconf make gcc perl fakeroot automake
-pacman -S --needed $(comm -12 <(pacman -Slq | sort) <(sort ~/jeremy-venditto/dotfiles/.resources/packages/all.txt))
+sudo pacman -S --needed $(comm -12 <(pacman -Slq | sort) <(sort ~/jeremy-venditto/dotfiles/.resources/packages/all.txt))
 if [[ $MACHINE = "DESKTOP" ]]; then DESKTOP_PACKAGES;fi
 if [[ $MACHINE = "LAPTOP" ]]; then LAPTOP_PACKAGES;fi
 if [[ $MACHINE = "VIRTUAL" ]]; then VIRTUAL_PACKAGES;fi
-#mpd neofetch  -- did not install
 
 
 ### install dmenu
@@ -101,16 +100,15 @@ chmod +x screen*
 
 
 # Change Nitrogen Settings
-if [[ $MACHINE = DESKTOP ]]; then  echo 'soon';fi
+if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
 if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 
 # Change LightDM settings
-#sudo sed -i "/something/c\something2/" /etc/lightdm/lightdm-gtk-greeter.conf
-if [[ $MACHINE = DESKTOP ]]; then  echo 'soon';fi
+if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
 if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = VIRTUAL ]]; then cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm/lightdm-gtk-greeter.conf
+if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm/lightdm-gtk-greeter.conf
 
 # Change Grub Wallpaper
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
