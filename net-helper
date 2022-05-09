@@ -11,7 +11,8 @@
 #https://jeremyvenditto.info
 
 # required packages
-#dig macchanger net-tools wireless_tools nmap wireshark-qt whois nethogs iproute2? iw netstat
+#dig macchanger net-tools wireless_tools nmap wireshark-qt whois nethogs iproute2 iw netstat
+#ifconfig (net-tools) macchanger
 
 red="\e[0;91m"
 blue="\e[0;94m"
