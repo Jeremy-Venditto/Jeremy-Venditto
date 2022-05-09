@@ -1,4 +1,4 @@
-# Laptop or desktop?
+n# Laptop or desktop?
 PS3='Please enter your choice: '
 options=("Laptop" "Desktop" "Virtual Machine" "Quit")
 select opt in "${options[@]}"
@@ -35,25 +35,25 @@ git clone https://github.com/jeremy-venditto/wallpaper
 ~/jeremy-venditto/nano-syntax-highlighting.sh
 # Move config files
    #files
-mv "~/jeremy-venditto/dotfiles/.bash_profile" /~
-mv "~/jeremy-venditto/dotfiles/.bashrc" ~/
-mv "~/jeremy-venditto/dotfiles/.profile" ~/
-mv "~/jeremy-venditto/dotfiles/.xinitrc" ~/
-mv "~/jeremy-venditto/dotfiles/.xprofile" ~/
+mv ~/jeremy-venditto/dotfiles/.bash_profile /~
+mv ~/jeremy-venditto/dotfiles/.bashrc ~/
+mv ~/jeremy-venditto/dotfiles/.profile ~/
+mv ~/jeremy-venditto/dotfiles/.xinitrc ~/
+mv ~/jeremy-venditto/dotfiles/.xprofile ~/
 #echo "Sudo required for moving files to /usr/share/pixmaps/"
-sudo mv "~/jeremy-venditto/dotfiles/usr/share/pixmaps/*" /usr/share/pixmaps/
+sudo mv ~/jeremy-venditto/dotfiles/usr/share/pixmaps/* /usr/share/pixmaps/
    #directories
-mv "~/jeremy-venditto/dotfiles/.config/" ~/
-mv "~/jeremy-venditto/dotfiles/.local/" ~/
+mv ~/jeremy-venditto/dotfiles/.config/ ~/
+mv ~/jeremy-venditto/dotfiles/.local/ ~/
       #wallpaper
 	#wallpaper directory? default is ~/
-mv "~/jeremy-venditto/wallpaper" ~/
+mv ~/jeremy-venditto/wallpaper/ ~/
 
 #      #lightdm config
-#sudo mv "/etc/lightdm/lightdm.conf lightdm.conf_backup"
+#sudo mv /etc/lightdm/lightdm.conf lightdm.conf_backup
 #if [[ $MACHINE = "LAPTOP" ]] || [[ $MACHINE = "VIRTUAL" ]]; then
-#sudo mv "~/jeremy-venditto/dotfiles/etc/lightdm/lightdm.conf_laptop" /etc/lightdm/lightdm.conf
-#else sudo mv "~/jeremy-venditto/dotfiles/etc/lightdm/lightdm.conf_desktop" /etc/lightdm/lightdm.conf;fi
+#sudo mv ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm.conf_laptop /etc/lightdm/lightdm.conf
+#else sudo mv ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm.conf_desktop /etc/lightdm/lightdm.conf;fi
 
 
 ### INSTALL PACKAGES
@@ -110,7 +110,7 @@ if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/
 #sudo sed -i "/something/c\something2/" /etc/lightdm/lightdm-gtk-greeter.conf
 if [[ $MACHINE = DESKTOP ]]; then  echo 'soon';fi
 if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = VIRTUAL ]]; then cp "~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop" "/etc/lightdm/lightdm/lightdm-gtk-greeter.conf"
+if [[ $MACHINE = VIRTUAL ]]; then cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm/lightdm-gtk-greeter.conf
 
 # Change Grub Wallpaper
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
