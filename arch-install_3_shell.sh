@@ -34,10 +34,12 @@ done
 			### ESSENTIALS ###
 			##################
 
-# Install Git
-sudo pacman -S git
+# Install git and build tools
+sudo pacman -S git autoconf make gcc perl fakeroot automake
+
 # Make folder named jeremy-venditto in the home folder
 mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
+
 # Clone repos
 git clone https://github.com/jeremy-venditto/bash-scripts
 git clone https://github.com/jeremy-venditto/dotfiles
@@ -64,8 +66,8 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt
 }
 
 function VIRTUAL_PACKAGES {
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman.txt
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/vm-only.txt
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_aur_full
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si
 yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur-vm.txt
@@ -102,7 +104,7 @@ mv ~/jeremy-venditto/wallpaper/ ~/
 
 
 
-## Screen Resolution
+## Screen Resolution for virtual machines
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/jeremy-venditto/screen-normal.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/jeremy-venditto/screen-full.sh
 chmod +x ~/jeremy-venditto/screen*
@@ -113,24 +115,24 @@ chmod +x ~/jeremy-venditto/screen*
 sudo ufw enable
 sudo systemctl enable --now ufw
 
-# Change Nitrogen Settings
-if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-
 # Enable LightDM
 sudo systemctl enable lightdm
 
 # Change LightDM settings
 if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
 if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm/lightdm-gtk-greeter.conf
+if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
+
+# Change Nitrogen Settings
+if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
+if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
+if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 # Change Grub Wallpaper
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
 
 # Enable nano syntax highlighting
-~/jeremy-venditto/nano-syntax-highlighting.sh
+~/jeremy-venditto/bash-scripts/nano-syntax-highlighting.sh
 
 ### install dmenu
 cd ~/.config/dmenu && sudo make install
