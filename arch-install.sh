@@ -143,6 +143,7 @@ git clone https://github.com/jeremy-venditto/wallpaper
 			#### PACKAGES ####
 			##################
 
+# Fix Packages
 function LAPTOP_PACKAGES {
 sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt
@@ -151,6 +152,7 @@ cd yay && makepkg -si
 yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt
 }
 
+# Fix packages
 function DESKTOP_PACKAGES {
 sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt
@@ -159,12 +161,16 @@ cd yay && makepkg -si
 yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt
 }
 
+# WORKING KIND OF...
 function VIRTUAL_PACKAGES {
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_aur_full
+# Pacman for all
+#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full
+# VM specific
+#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_aur_full
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si
-yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur-vm.txt
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_VM.txt
 }
 
 	### INTSALL PACKAGES ###
@@ -237,7 +243,7 @@ echo 'script complete'
 
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
-options=("Part 1" "Part 2" "Part 3" "Quit")
+options=("Part 1" "Part 2" "Part 3" "Part 4" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
