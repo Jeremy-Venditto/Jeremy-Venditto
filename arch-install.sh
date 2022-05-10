@@ -2,6 +2,100 @@
 
 # My Arch Linux Install
 
+#----------------------------------------------------
+function part_1 {
+# Initial ISO install.. manual intervention is required for this step as of now
+ln /sys/firmware/efi/efivars
+sleep 1
+ping -c 3 archlinux.org
+iplink
+#wifi?
+#wifi-menu
+timedatectl set-ntp true
+lsblk
+sleep 1
+# which device? 
+INSTALLDRIVE=/dev/vda
+cfdisk $INSTALLDRIVE
+# EFI Partition?
+USEREFI= input
+mkfs.fat -F32 $USEREFI
+# Root?
+USERROOT = input
+mkfs.ext4 $USERROOT
+# Home?
+USERHOME = input
+mkfs.ext4 $USERHOME
+mount $USERROOT /mnt
+mkdir /mnt/home
+mount $USERHOME /mnt/home
+lsblk
+echo look good? Y/N
+pacstrap -i /mnt base linux linux-firmware sudo nano
+genfstab -U -p /mnt >> /mnt/etc/fstab
+arch-chroot /mnt /bin/bash
+mkdir /delete && sudo pacman -S git
+cd /delete && git clone https://github.com/jeremy-venditto/bash-scripts
+cd bash-scripts && ./arch-install.sh
+}
+
+#----------------------------------------------------
+function part_2 {
+# Script is running at this point to finish initial install
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+hwclock --systohc --utc
+date
+sleep 2
+USERHOSTNAME=archvm
+echo $USERHOSTNAME > /etc/hostname
+echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" >> /etc/hosts
+pacman -S networkmanager grub efiboomgr
+systemctl enable NetworkManager
+echo 'set root password...'
+passwd
+## EFI
+mkdir /boot/efi
+mount /dev/sda1 /boot/efi
+lsblk # to check if everything is mounted correctly
+sleep 5
+grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
+grub-mkconfig -o /boot/grub/grub.cfg
+exit
+umount -R /mnt
+reboot
+}
+
+#----------------------------------------------------
+function part_3 {
+# Add user, enable sudo privledges and reboot
+
+	## SWAPFILE
+#allocate -l 3G /swapfile
+#chmod 600 /swapfile
+#mkswap /swapfile
+#swapon /swapfile
+#echo '/swapfile none swap sw 0 0' >> /etc/fstab
+#free -m
+
+## USER
+USERUSERNAME="arch-user"
+useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
+passwd $USERUSERNAME
+
+EDITOR=nano visudo
+# %wheel ALL=(ALL) ALL
+# use sed to uncomment
+reboot
+}
+
+#----------------------------------------------------
+function part_4 {
+#Install Everything else
+
+
 			##############
 			### PROMPT ###
 			##############
@@ -138,9 +232,59 @@ sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/0
 cd ~/.config/dmenu && sudo make install
 
 echo 'script complete'
+}
+
+
+### MAIN PROMPT ####
+PS3='Please enter your choice: '
+options=("Part 1" "Part 2" "Part 3" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Part 1")
+            part_1
+            break
+            ;;
+        "Part 2")
+            part_2
+            break
+            ;;
+        "Part 3")
+            part_3
+            break
+            ;;
+        "Part 4")
+            part_4
+            break
+            ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+
+
+
+
 
 #### TO DO #####
 # Make rc.lua_virtual
 # Make /etc/lightdm/lightdm.conf_virtual
 # Make wallpaper directory switcher script
 # Make xrandr script or something idk maybe .bashr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
