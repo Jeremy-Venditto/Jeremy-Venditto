@@ -79,33 +79,10 @@ if [[ $MACHINE = "LAPTOP" ]]; then LAPTOP_PACKAGES;fi
 if [[ $MACHINE = "VIRTUAL" ]]; then VIRTUAL_PACKAGES;fi
 
 
-### install dmenu
-cd ~/.config/dmenu && sudo make install
-
 			###################
 			### EDIT CONFIG ###
 			###################
 
-## Screen Resolution
-echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/jeremy-venditto/screen-normal.sh
-echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/jeremy-venditto/screen-full.sh
-chmod +x ~/jeremy-venditto/screen*
-
-# Change Nitrogen Settings
-if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-
-# Change LightDM settings
-if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
-if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm/lightdm-gtk-greeter.conf
-
-# Change Grub Wallpaper
-sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
-
-# Enable nano syntax highlighting
-~/jeremy-venditto/nano-syntax-highlighting.sh
 
 # Move config files
   #files
@@ -122,6 +99,43 @@ mv ~/jeremy-venditto/dotfiles/.local/ ~/
     #wallpaper
     #wallpaper directory? default is ~/
 mv ~/jeremy-venditto/wallpaper/ ~/
+
+
+
+## Screen Resolution
+echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/jeremy-venditto/screen-normal.sh
+echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/jeremy-venditto/screen-full.sh
+chmod +x ~/jeremy-venditto/screen*
+
+		# Services
+
+# Enable UFW firewall
+sudo ufw enable
+sudo systemctl enable --now ufw
+
+# Change Nitrogen Settings
+if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
+if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
+if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+
+# Enable LightDM
+sudo systemctl enable lightdm
+
+# Change LightDM settings
+if [[ $MACHINE = DESKTOP ]]; then echo 'soon';fi
+if [[ $MACHINE = LAPTOP ]]; then echo 'soon';fi
+if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm/lightdm-gtk-greeter.conf
+
+# Change Grub Wallpaper
+sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
+
+# Enable nano syntax highlighting
+~/jeremy-venditto/nano-syntax-highlighting.sh
+
+### install dmenu
+cd ~/.config/dmenu && sudo make install
+
+echo 'script complete'
 
 #### TO DO #####
 # Make rc.lua_virtual
