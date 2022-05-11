@@ -2,26 +2,19 @@
 
 # My Arch Linux Install
 
-function EFI_CHECK {
-ls /sys/firmware/efi/efivars
-if [[ -e "/sys/firmware/efi/efivars" ]]; then
-echo "EFI MODE = YES";else
-echo "EFI MODE = NO";echo "Exiting script.. please check your settings"
-exit 1;fi;}
-
 #----------------------------------------------------
 function part_1 {
 
 # Initial ISO install.. manual intervention is required for this step as of now
 
 # Check if using EFI Mode
-ls /sys/firmware/efi/efivars 
+ls /sys/firmware/efi/efivars
 if [[ -e "/sys/firmware/efi/efivars" ]]; then
 echo "EFI MODE = YES";else
-echo "EFI MODE = NO";echo "Exiting script.. please check your settings" 
+echo "EFI MODE = NO";echo "Exiting script.. please check your settings"
 exit 1;fi
 # Check if Internet is Up
-ip link && read # add prompt
+#ip link && read # add prompt
 ping -c 1 -q archlinux.org > /dev/null 2>&1
 if [[ $? = 0 ]]; then echo 'Internet = Yes'; else echo 'Internet = No';fi
 		#ping -c 3 archlinux.org
@@ -34,27 +27,27 @@ timedatectl set-ntp true
 	#### FIX ME #######################!!!!!
 
 # View disks before modifying them
-lsblk && read
-# which device? 
-INSTALLDRIVE=/dev/vda
-cfdisk $INSTALLDRIVE
+#lsblk && read
+# which device?
+#INSTALLDRIVE=/dev/vda
+#cfdisk $INSTALLDRIVE
 # Create EFI Partition (not mounted)
-USEREFI= input
-mkfs.fat -F32 $USEREFI
+#USEREFI= input
+#mkfs.fat -F32 $USEREFI
 # Create Root Partition
-USERROOT = input
-mkfs.ext4 $USERROOT
+#USERROOT = input
+#mkfs.ext4 $USERROOT
    # mount root
-mount $USERROOT /mnt
+#mount $USERROOT /mnt
 # Create Home Partition
-USERHOME = inpu
+#USERHOME = inpu
    # mount homet
-mkfs.ext4 $USERHOME
-mount $USERROOT /mnt
-mkdir /mnt/home
-mount $USERHOME /mnt/home
+#mkfs.ext4 $USERHOME
+#mount $USERROOT /mnt
+#mkdir /mnt/home
+#mount $USERHOME /mnt/home
 # list drives
-lsblk
+#lsblk
    #yes/no prompt here
 	### END FIX ME #####################!!!!!
 
@@ -68,30 +61,24 @@ arch-chroot /mnt /bin/bash
 # Download Install Script
 cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
 chmod 711 ~/arch-install.sh && ~/arch-install.sh
-}
 
-#----------------------------------------------------
-function part_2 {
 # Script is running at this point to finish initial install
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
 hwclock --systohc --utc
-date
-sleep 2
 USERHOSTNAME=archvm
 echo $USERHOSTNAME > /etc/hostname
-echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" >> /etc/hosts
-pacman -S networkmanager grub efiboomgr
+echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
+pacman -S networkmanager grub efibootmgr
 systemctl enable NetworkManager
 echo 'set root password...'
 passwd
 ## EFI
 mkdir /boot/efi
-mount /dev/sda1 /boot/efi
+mount /dev/vda1 /boot/efi
 lsblk # to check if everything is mounted correctly
-sleep 5
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
 grub-mkconfig -o /boot/grub/grub.cfg
 exit
@@ -116,9 +103,8 @@ USERUSERNAME="arch-user"
 useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
 passwd $USERUSERNAME
 
-EDITOR=nano visudo
-# %wheel ALL=(ALL) ALL
-# use sed to uncomment
+#EDITOR=nano visudo
+sudo sed -i 's!# %wheel ALL=(ALL) ALL!%wheel ALL=(ALL:ALL) ALL!'
 reboot
 }
 
@@ -214,7 +200,7 @@ mv ~/jeremy-venditto/wallpaper/ ~/
 if [[ $MACHINE = VIRTUAL ]]; then
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/screen-normal.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/screen-full.sh
-chmod +x ~/screen-normal ~/screen-full;fi
+chmod +x ~/screen-normal.sh ~/screen-full.sh;fi
 
 		# Services
 
