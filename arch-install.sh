@@ -56,12 +56,15 @@ timedatectl set-ntp true
 pacstrap -i /mnt base linux linux-firmware sudo nano curl
 # Generate File System Table
 genfstab -U -p /mnt >> /mnt/etc/fstab
+
+# Move install file into /mnt
+mv arch-install.sh /mnt/
 # Chroot into system
 arch-chroot /mnt /bin/bash
 # Download Install Script
-cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
-chmod 711 ~/arch-install.sh && ~/arch-install.sh
-
+#cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
+#chmod 711 ~/arch-install.sh && ~/arch-install.sh
+/arch-install.sh
 # Script is running at this point to finish initial install
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
