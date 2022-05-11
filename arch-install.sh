@@ -64,7 +64,7 @@ arch-chroot /mnt /bin/bash
 # Download Install Script
 #cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
 #chmod 711 ~/arch-install.sh && ~/arch-install.sh
-/arch-install.sh
+
 # Script is running at this point to finish initial install
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
@@ -74,6 +74,7 @@ hwclock --systohc --utc
 USERHOSTNAME=archvm
 echo $USERHOSTNAME > /etc/hostname
 echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
+pacman -Sy
 pacman -S networkmanager grub efibootmgr
 systemctl enable NetworkManager
 echo 'set root password...'
@@ -84,13 +85,12 @@ mount /dev/vda1 /boot/efi
 lsblk # to check if everything is mounted correctly
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
 grub-mkconfig -o /boot/grub/grub.cfg
-exit
 umount -R /mnt
 reboot
-}
+#}
 
 #----------------------------------------------------
-function part_3 {
+#function part_3 {
 # Add user, enable sudo privledges and reboot
 
 	## SWAPFILE
