@@ -51,6 +51,11 @@ timedatectl set-ntp true
    #yes/no prompt here
 	### END FIX ME #####################!!!!!
 
+# temp fix
+mkfs.fat -F32 /dev/vda1
+mkswap /dev/vda2 && swapon /dev/vda2
+mount /dev/vda3 /mnt
+mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
 
 # Install System
 pacstrap -i /mnt base linux linux-firmware sudo nano curl
@@ -85,8 +90,8 @@ mount /dev/vda1 /boot/efi
 lsblk # to check if everything is mounted correctly
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
 grub-mkconfig -o /boot/grub/grub.cfg
-umount -R /mnt
-reboot
+#umount -R /mnt
+#reboot
 #}
 
 #----------------------------------------------------
@@ -102,17 +107,22 @@ reboot
 #free -m
 
 ## USER
+#read USERNAME
 USERUSERNAME="arch-user"
 useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
+echo 'Set User Password'
 passwd $USERUSERNAME
 
 #EDITOR=nano visudo
-sudo sed -i 's!# %wheel ALL=(ALL) ALL!%wheel ALL=(ALL:ALL) ALL!'
-reboot
+sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+
+# add cron job here or something to boot script at next login
+echo 'You may now reboot your system'
+#reboot
 }
 
 #----------------------------------------------------
-function part_4 {
+function part_2 {
 #Install Everything else
 
 
@@ -240,7 +250,7 @@ echo 'script complete'
 						#~~~############~~~#
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
-options=("Part 1" "Part 2" "Part 3" "Part 4" "Quit")
+options=("Part 1" "Part 2" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -252,15 +262,15 @@ do
             part_2
             break
             ;;
-        "Part 3")
-            part_3
-            break
-            ;;
-        "Part 4")
-            part_4
+#        "Part 3")
+#            part_3
+#            break
+#            ;;
+#        "Part 4")
+#            part_4
 #            rm -rf ~/jeremy-venditto
-            break
-            ;;
+#            break
+#            ;;
         "Quit")
             break
             ;;
