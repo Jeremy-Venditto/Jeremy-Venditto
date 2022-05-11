@@ -2,41 +2,72 @@
 
 # My Arch Linux Install
 
+function EFI_CHECK {
+ls /sys/firmware/efi/efivars
+if [[ -e "/sys/firmware/efi/efivars" ]]; then
+echo "EFI MODE = YES";else
+echo "EFI MODE = NO";echo "Exiting script.. please check your settings"
+exit 1;fi;}
+
 #----------------------------------------------------
 function part_1 {
+
 # Initial ISO install.. manual intervention is required for this step as of now
-ls /sys/firmware/efi/efivars
-sleep 1
-ping -c 3 archlinux.org
-iplink
-#wifi?
-#wifi-menu
+
+# Check if using EFI Mode
+ls /sys/firmware/efi/efivars 
+if [[ -e "/sys/firmware/efi/efivars" ]]; then
+echo "EFI MODE = YES";else
+echo "EFI MODE = NO";echo "Exiting script.. please check your settings" 
+exit 1;fi
+# Check if Internet is Up
+ip link && read # add prompt
+ping -c 1 -q archlinux.org > /dev/null 2>&1
+if [[ $? = 0 ]]; then echo 'Internet = Yes'; else echo 'Internet = No';fi
+		#ping -c 3 archlinux.org
+		#iplink # if UP okay if DOWN then exit script
+		#wifi? #wifi-menu
+# Set Network Time Protocol
 timedatectl set-ntp true
-lsblk
-sleep 1
+
+
+	#### FIX ME #######################!!!!!
+
+# View disks before modifying them
+lsblk && read
 # which device? 
 INSTALLDRIVE=/dev/vda
 cfdisk $INSTALLDRIVE
-# EFI Partition?
+# Create EFI Partition (not mounted)
 USEREFI= input
 mkfs.fat -F32 $USEREFI
-# Root?
+# Create Root Partition
 USERROOT = input
 mkfs.ext4 $USERROOT
-# Home?
-USERHOME = input
+   # mount root
+mount $USERROOT /mnt
+# Create Home Partition
+USERHOME = inpu
+   # mount homet
 mkfs.ext4 $USERHOME
 mount $USERROOT /mnt
 mkdir /mnt/home
 mount $USERHOME /mnt/home
+# list drives
 lsblk
-echo look good? Y/N
-pacstrap -i /mnt base linux linux-firmware sudo nano
+   #yes/no prompt here
+	### END FIX ME #####################!!!!!
+
+
+# Install System
+pacstrap -i /mnt base linux linux-firmware sudo nano curl
+# Generate File System Table
 genfstab -U -p /mnt >> /mnt/etc/fstab
+# Chroot into system
 arch-chroot /mnt /bin/bash
-mkdir /delete && sudo pacman -S git
-cd /delete && git clone https://github.com/jeremy-venditto/bash-scripts
-cd bash-scripts && ./arch-install.sh
+# Download Install Script
+cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
+chmod 711 ~/arch-install.sh && ~/arch-install.sh
 }
 
 #----------------------------------------------------
@@ -183,7 +214,7 @@ mv ~/jeremy-venditto/wallpaper/ ~/
 if [[ $MACHINE = VIRTUAL ]]; then
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/screen-normal.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/screen-full.sh
-chmod +x ~/jeremy-venditto/screen*;fi
+chmod +x ~/screen-normal ~/screen-full;fi
 
 		# Services
 
