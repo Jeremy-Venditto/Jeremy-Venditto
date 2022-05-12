@@ -14,7 +14,8 @@ if [[ -e "/sys/firmware/efi/efivars" ]]; then
 echo "EFI MODE = YES";else
 echo "EFI MODE = NO";echo "Exiting script.. please check your settings"
 exit 1;fi
-# Check if Internet is Up
+
+# Check Internet Connection
 #ip link && read # add prompt
 echo 'Checking Internet Connection'
 ping -c 1 -q archlinux.org > /dev/null 2>&1
@@ -57,9 +58,7 @@ timedatectl set-ntp true
 # temp fix
 echo 'Formatting and mounting disks'
 mkfs.fat -F32 /dev/vda1
-#mkswap /dev/vda2 && swapon /dev/vda2 #Kills system
-#mkfs.ext4 /dev/vda3 &&
-mount /dev/vda3 /mnt
+mkfs.ext4 /dev/vda3 && mount /dev/vda3 /mnt
 mkfs.ext4 /dev/vda4 && mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
 
 # Install System
@@ -76,13 +75,10 @@ mv arch-install.sh /mnt/
 # Chroot into system
 echo "Chrooting into system"
 arch-chroot /mnt /bin/bash /arch-install.sh -a
-# Download Install Script
-#cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
-#chmod 711 ~/arch-install.sh && ~/arch-install.sh
-#AFTER_CHROOT
 }
+
 function AFTER_CHROOT {
-# Script is running at this point to finish initial install
+#Chrooting into /mnt stopped the script. so here we are with another function
 echo 'Generating locales'
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
@@ -106,12 +102,12 @@ systemctl enable NetworkManager
 echo 'NetworkManager has been enabled'
 echo;echo 'set root password...'
 passwd
-## EFI
+# EFI
 echo 'Creating EFI partition'
 mkdir /boot/efi
 mount /dev/vda1 /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
-lsblk # to check if everything is mounted correctly
+#lsblk # to check if everything is mounted correctly
 echo 'Installing grub'
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
 echo 'Grub installed..'
@@ -143,7 +139,7 @@ echo 'Adding user to wheel group'
 sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo 'User now has sudo privledges'
 # add cron job here or something to boot script at next login
-mv /arch-install.sh /home/$USERUSERNAME/
+mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
 echo 'You may now reboot your system'
 }
 
