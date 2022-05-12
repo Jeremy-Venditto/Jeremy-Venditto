@@ -74,11 +74,11 @@ echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
 # Chroot into system
 echo "Chrooting into system"
-arch-chroot /mnt /bin/bash
+arch-chroot /mnt /bin/bash /arch-install.sh -1
 # Download Install Script
 #cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
 #chmod 711 ~/arch-install.sh && ~/arch-install.sh
-
+function AFTER_CHROOT {
 # Script is running at this point to finish initial install
 echo 'Generating locales'
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
@@ -145,6 +145,8 @@ sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo 'User now has sudo privledges'
 # add cron job here or something to boot script at next login
 echo 'You may now reboot your system'
+}
+echo 'hey test'
 #reboot
 }
 
@@ -305,9 +307,14 @@ do
     esac
 done
 
-
-
-
+# Flags
+while getopts ":123" option; do
+   case $option in
+      1) # Finish Part 1 script after chroot
+         AFTER_CHROOT
+         exit;;
+esac
+done
 
 #### TO DO #####
 # Make rc.lua_virtual
