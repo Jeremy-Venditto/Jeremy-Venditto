@@ -8,6 +8,7 @@ function part_1 {
 # Initial ISO install.. manual intervention is required for this step as of now
 
 # Check if using EFI Mode
+echo 'Checking if system is booted in EFI mode'
 ls /sys/firmware/efi/efivars
 if [[ -e "/sys/firmware/efi/efivars" ]]; then
 echo "EFI MODE = YES";else
@@ -15,12 +16,14 @@ echo "EFI MODE = NO";echo "Exiting script.. please check your settings"
 exit 1;fi
 # Check if Internet is Up
 #ip link && read # add prompt
+echo 'Checking Internet Connection'
 ping -c 1 -q archlinux.org > /dev/null 2>&1
 if [[ $? = 0 ]]; then echo 'Internet = Yes'; else echo 'Internet = No';fi
 		#ping -c 3 archlinux.org
 		#iplink # if UP okay if DOWN then exit script
 		#wifi? #wifi-menu
 # Set Network Time Protocol
+echo 'Setting Network Time Protocol'
 timedatectl set-ntp true
 
 
@@ -52,44 +55,66 @@ timedatectl set-ntp true
 	### END FIX ME #####################!!!!!
 
 # temp fix
+echo 'Formatting and mounting disks'
 mkfs.fat -F32 /dev/vda1
 mkswap /dev/vda2 && swapon /dev/vda2
 mount /dev/vda3 /mnt
 mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
 
 # Install System
+echo 'Installing base system'
 pacstrap -i /mnt base linux linux-firmware sudo nano curl
+echo 'System Installed'
 # Generate File System Table
+echo 'Generating File System Table'
 genfstab -U -p /mnt >> /mnt/etc/fstab
-
+echo "created /etc/fstab"
 # Move install file into /mnt
+echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
 # Chroot into system
+echo "Chrooting into system"
 arch-chroot /mnt /bin/bash
 # Download Install Script
 #cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
 #chmod 711 ~/arch-install.sh && ~/arch-install.sh
 
 # Script is running at this point to finish initial install
+echo 'Generating locales'
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo 'locales generated'
+echo 'Setting Time Zone'
 ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
 hwclock --systohc --utc
+echo 'Time Zone Configured'
+echo 'Creating Hostname'
 USERHOSTNAME=archvm
 echo $USERHOSTNAME > /etc/hostname
 echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
+echo "Hostname set as $USERHOSTNAME"
+
+echo 'Updating System'
 pacman -Sy
+echo 'Installing NetworkManager Grub and EfiBootMgr'
 pacman -S networkmanager grub efibootmgr
 systemctl enable NetworkManager
-echo 'set root password...'
+echo 'NetworkManager has been enabled'
+echo;echo 'set root password...'
 passwd
 ## EFI
+echo 'Creating EFI partition'
 mkdir /boot/efi
 mount /dev/vda1 /boot/efi
+echo 'EFI partition created and mounted on /boot/efi'
 lsblk # to check if everything is mounted correctly
+echo 'Installing grub'
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
+echo 'Grub installed..'
+echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
+echo 'Grub Config created'
 #umount -R /mnt
 #reboot
 #}
@@ -108,14 +133,16 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 ## USER
 #read USERNAME
+echo 'Creating User'
 USERUSERNAME="arch-user"
 useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
-echo 'Set User Password'
+echo;echo 'Set User Password'
 passwd $USERUSERNAME
-
+echo 'User Creation Complete'
 #EDITOR=nano visudo
+echo 'Adding user to wheel group'
 sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-
+echo 'User now has sudo privledges'
 # add cron job here or something to boot script at next login
 echo 'You may now reboot your system'
 #reboot
