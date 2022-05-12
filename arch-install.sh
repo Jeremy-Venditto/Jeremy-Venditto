@@ -57,9 +57,10 @@ timedatectl set-ntp true
 # temp fix
 echo 'Formatting and mounting disks'
 mkfs.fat -F32 /dev/vda1
-mkswap /dev/vda2 && swapon /dev/vda2
+#mkswap /dev/vda2 && swapon /dev/vda2 #Kills system
+#mkfs.ext4 /dev/vda3 &&
 mount /dev/vda3 /mnt
-mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
+mkfs.ext4 /dev/vda4 && mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
 
 # Install System
 echo 'Installing base system'
@@ -67,7 +68,7 @@ pacstrap -i /mnt base linux linux-firmware sudo nano curl
 echo 'System Installed'
 # Generate File System Table
 echo 'Generating File System Table'
-genfstab -U -p /mnt >> /mnt/etc/fstab
+genfstab -U -p /mnt > /mnt/etc/fstab
 echo "created /etc/fstab"
 # Move install file into /mnt
 echo "Install Script moved to /mnt"
@@ -126,6 +127,9 @@ echo 'Grub Config created'
 #echo '/swapfile none swap sw 0 0' >> /etc/fstab
 #free -m
 
+## Swao Partition
+mkswap /dev/vda2 && swapon /dev/vda2
+
 ## USER
 #read USERNAME
 echo 'Creating User'
@@ -139,6 +143,7 @@ echo 'Adding user to wheel group'
 sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo 'User now has sudo privledges'
 # add cron job here or something to boot script at next login
+mv /arch-install.sh /home/$USERUSERNAME/
 echo 'You may now reboot your system'
 }
 
@@ -292,7 +297,7 @@ do
     case $opt in
         "Part 1")
             part_1
-            AFTER_CHROOT
+            #AFTER_CHROOT
             break
             ;;
         "Part 2")
@@ -320,3 +325,4 @@ done
 # Make /etc/lightdm/lightdm.conf_virtual
 # Make wallpaper directory switcher script
 # Make xrandr script or something idk maybe .bashr
+# Enable sudo privlidges in tty
