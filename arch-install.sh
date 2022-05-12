@@ -78,7 +78,7 @@ arch-chroot /mnt /bin/bash /arch-install.sh -a
 # Download Install Script
 #cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
 #chmod 711 ~/arch-install.sh && ~/arch-install.sh
-AFTER_CHROOT
+#AFTER_CHROOT
 }
 function AFTER_CHROOT {
 # Script is running at this point to finish initial install
@@ -292,6 +292,7 @@ do
     case $opt in
         "Part 1")
             part_1
+            AFTER_CHROOT
             break
             ;;
         "Part 2")
@@ -312,15 +313,6 @@ do
             ;;
         *) echo "invalid option $REPLY";;
     esac
-done
-
-# Flags
-while getopts ":a" option; do
-   case $option in
-      a) # Finish Part 1 script after chroot
-         AFTER_CHROOT
-         exit;;
-esac
 done
 
 #### TO DO #####
