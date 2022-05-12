@@ -74,10 +74,12 @@ echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
 # Chroot into system
 echo "Chrooting into system"
-arch-chroot /mnt /bin/bash /arch-install.sh -1
+arch-chroot /mnt /bin/bash /arch-install.sh -a
 # Download Install Script
 #cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
 #chmod 711 ~/arch-install.sh && ~/arch-install.sh
+AFTER_CHROOT
+}
 function AFTER_CHROOT {
 # Script is running at this point to finish initial install
 echo 'Generating locales'
@@ -115,13 +117,6 @@ echo 'Grub installed..'
 echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
 echo 'Grub Config created'
-#umount -R /mnt
-#reboot
-#}
-
-#----------------------------------------------------
-#function part_3 {
-# Add user, enable sudo privledges and reboot
 
 	## SWAPFILE
 #allocate -l 3G /swapfile
@@ -145,9 +140,6 @@ sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo 'User now has sudo privledges'
 # add cron job here or something to boot script at next login
 echo 'You may now reboot your system'
-}
-echo 'hey test'
-#reboot
 }
 
 #----------------------------------------------------
@@ -274,9 +266,24 @@ cd ~/.config/dmenu && sudo make install
 echo 'script complete'
 }
 
+
+
 						#~~~############~~~#
 						#~~ SCRIPT START ~~#
 						#~~~############~~~#
+
+
+
+# Flags
+while getopts ":a" option; do
+   case $option in
+      a) # Finish Part 1 script after chroot
+         AFTER_CHROOT
+         exit;;
+esac
+done
+
+
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
 options=("Part 1" "Part 2" "Quit")
@@ -308,9 +315,9 @@ do
 done
 
 # Flags
-while getopts ":123" option; do
+while getopts ":a" option; do
    case $option in
-      1) # Finish Part 1 script after chroot
+      a) # Finish Part 1 script after chroot
          AFTER_CHROOT
          exit;;
 esac
