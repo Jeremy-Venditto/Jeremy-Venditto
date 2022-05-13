@@ -2,7 +2,34 @@
 
 # My Arch Linux Install
 
+#automated answers
+#printf '%s\n' y | arch-install.sh
+
 #----------------------------------------------------
+function AUTOMATED_ALL {
+read -r -p "Automate Script? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) AUTOMATED=YES ;;
+    [nN][oO]|[nN]) AUTOMATED=NO      ;; *) echo "Invalid input...";exit 1;;esac
+}
+function AUTOMATED_DESKTOP {
+echo 'hi'
+}
+function AUTOMATED_LAPTOP {
+echo 'hi'
+}
+function AUTOMATED_VM {
+cat ~/jeremy-venditto/automated_vm.txt << 'EOF'
+y
+n
+n
+y
+y
+n
+EOF
+~/jeremy-venditto/automated_vm.txt | ~/jeremy-venditto/arch-install.sh
+}
+
+
 function ARCH_ISO {
 
 # Initial ISO install.. manual intervention is required for this step as of now
@@ -36,31 +63,54 @@ timedatectl set-ntp true
 lsblk
 # Select Installation Hard Disk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
-cfdisk $INSTALL_DRIVE
+#cfdisk $INSTALL_DRIVE
 # Create EFI Partition (not mounted)
 read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
-mkfs.fat -F32 $USEREFI
-echo "EFI Partition created on $EFI_PART"
+#mkfs.fat -F32 $USEREFI > /dev/null
+#echo "EFI Partition created on $EFI_PART"
 # Create Swap Partition (don't swap on yet)
 read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
-mkswap $SWAP_PART
+#mkswap $SWAP_PART > /dev/null
 # Create Root Partition mounted to /mnt
 read -rp "ROOT PARTITION: " -e -i /dev/ ROOT_PART
-mkfs.ext4 $ROOT_PART
-mount $ROOT_PART /mnt
-echo "ROOT PARTITION mounted on $ROOT_PART"
+#mkfs.ext4 $ROOT_PART
+#mount $ROOT_PART /mnt > /dev/null
+#echo "ROOT PARTITION mounted on $ROOT_PART"
 # Create Home Partition mounted to /mnt/home
 read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
-mkfs.ext4 $HOME_PART
-mkdir /mnt/home
-mount $HOME_PART /mnt/home
-echo "HOME PARTITION mounted on $HOME_PART"
+#mkfs.ext4 $HOME_PART
+#mkdir /mnt/home
+#mount $HOME_PART /mnt/home > /dev/null
+#echo "HOME PARTITION mounted on $HOME_PART"
+
 echo
 echo "Install Drive: $INSTALL_DRIVE"
 echo "EFI Partiton: $EFI_PART"
 echo "SWAP Partition: $SWAP_PART"
 echo "Root Partition: $ROOT_PART"
 echo "Home Partition: $HOME_PART"
+read -r -p "Coninue with disk formatting? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY])
+
+# Partition Drive (manual as of now)
+cfdisk $INSTALL_DRIVE # Make this automated
+
+# Create EFI Partition (not mounted)
+mkfs.fat -F32 $USEREFI > /dev/null
+echo "EFI Partition created on $EFI_PART"
+# Create Swap Space (Partition or file (don't swap on yet))
+mkswap $SWAP_PART > /dev/null
+if [[ -z $SWAP_PART ]] then echo "SWAP file set up on (edit me)"; else echo "SWAP space set up on $SWAP_PART";fi
+# Create Root Partition mounted to /mnt
+mkfs.ext4 $ROOT_PART
+mount $ROOT_PART /mnt > /dev/null
+echo "ROOT PARTITION mounted on $ROOT_PART"
+# Create Home Partition mounted to /mnt/home
+read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
+mkfs.ext4 $HOME_PART
+mkdir -p /mnt/home
+mount $HOME_PART /mnt/home > /dev/null ;;
+    [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";exit 1;;esac
 lsblk
 read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY]) echo "Yes" ;;
@@ -120,7 +170,7 @@ echo "Hostname set as $USERHOSTNAME"
 echo 'Updating System'
 pacman -Sy
 echo 'Installing NetworkManager Grub and EfiBootMgr'
-pacman -S networkmanager grub efibootmgr
+pacman -S networkmanager grub efibootmgr --noconfirm
 systemctl enable NetworkManager
 echo 'NetworkManager has been enabled'
 echo;echo 'set root password...'
@@ -182,14 +232,17 @@ do
     case $opt in
         "Laptop")
 	    MACHINE="LAPTOP"
+#	    if [[ $AUTOMATED=YES ]];then AUTOMATED_LAPTOP;fi
             break
             ;;
         "Desktop")
 	    MACHINE="DESKTOP"
+#           if [[ $AUTOMATED=YES ]];then AUTOMATED_DESKTOP;fi
             break
             ;;
         "Virtual Machine")
 	    MACHINE="VIRTUAL"
+#           if [[ $AUTOMATED=YES ]];then AUTOMATED_VM;fi
             break
             ;;
         "Quit")
@@ -204,7 +257,7 @@ done
 			##################
 
 # Install git and build tools
-sudo pacman -S git autoconf make gcc perl fakeroot automake
+sudo pacman -S git autoconf make gcc perl fakeroot automake --noconfirm
 
 # Make folder named jeremy-venditto in the home folder
 mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
@@ -225,15 +278,18 @@ sudo pacman -Syyu
 sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 ## Install Packages
 	#Packages for all machine types
-#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox
+#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox --noconfirm
         #Install yay AUR helper
 git clone https://aur.archlinux.org/yay
-cd yay && makepkg -si
+cd yay && makepkg -si --noconfirm
         #Install machine specific packages
-if [[ $MACHINE = "DESKTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt && yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt;fi
-if [[ $MACHINE = "LAPTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt && yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt;fi
-if [[ $MACHINE = "VIRTUAL" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt && yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt;fi
+if [[ $MACHINE = "DESKTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt --noconfirm;fi
+if [[ $MACHINE = "LAPTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt --noconfirm;fi
+if [[ $MACHINE = "VIRTUAL" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt --noconfirm;fi
 
 
 			###################
@@ -307,6 +363,9 @@ while getopts ":a" option; do
 esac
 done
 
+
+# AUTOMATED PROMPT
+AUTOMATED_ALL
 
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '

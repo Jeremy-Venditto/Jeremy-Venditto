@@ -3,76 +3,6 @@
 # My Arch Linux Install
 
 #----------------------------------------------------
-function AFTER_CHROOT{
-echo 'Generating locales'
-echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-locale-gen
-echo "LANG=en_US.UTF-8" > /etc/locale.conf
-echo 'locales generated'
-echo 'Setting Time Zone'
-ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
-hwclock --systohc --utc
-echo 'Time Zone Configured'
-echo 'Creating Hostname'
-USERHOSTNAME=archvm
-echo $USERHOSTNAME > /etc/hostname
-echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
-echo "Hostname set as $USERHOSTNAME"
-
-echo 'Updating System'
-pacman -Sy
-echo 'Installing NetworkManager Grub and EfiBootMgr'
-pacman -S networkmanager grub efibootmgr
-systemctl enable NetworkManager
-echo 'NetworkManager has been enabled'
-echo;echo 'set root password...'
-passwd
-## EFI
-echo 'Creating EFI partition'
-mkdir /boot/efi
-mount /dev/vda1 /boot/efi
-echo 'EFI partition created and mounted on /boot/efi'
-lsblk # to check if everything is mounted correctly
-echo 'Installing grub'
-grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
-echo 'Grub installed..'
-echo 'Creating Grub Config file'
-grub-mkconfig -o /boot/grub/grub.cfg
-echo 'Grub Config created'
-#umount -R /mnt
-#reboot
-#}
-
-#----------------------------------------------------
-#function part_3 {
-# Add user, enable sudo privledges and reboot
-
-        ## SWAPFILE
-#allocate -l 3G /swapfile
-#chmod 600 /swapfile
-#mkswap /swapfile
-#swapon /swapfile
-#echo '/swapfile none swap sw 0 0' >> /etc/fstab
-#free -m
-
-## USER
-#read USERNAME
-echo 'Creating User'
-USERUSERNAME="arch-user"
-useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
-echo;echo 'Set User Password'
-passwd $USERUSERNAME
-echo 'User Creation Complete'
-#EDITOR=nano visudo
-echo 'Adding user to wheel group'
-sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-echo 'User now has sudo privledges'
-# add cron job here or something to boot script at next login
-echo 'You may now reboot your system'
-echo 'hey test'
-#reboot
-}
-
 function part_1 {
 
 # Initial ISO install.. manual intervention is required for this step as of now
@@ -82,9 +12,10 @@ echo 'Checking if system is booted in EFI mode'
 ls /sys/firmware/efi/efivars
 if [[ -e "/sys/firmware/efi/efivars" ]]; then
 echo "EFI MODE = YES";else
-echo "EFI MODE = NO";echo "Exiting script.. please check your settings"
+echo "EFI MODE = NO" && echo "Exiting script.. please check your settings"
 exit 1;fi
-# Check if Internet is Up
+
+# Check Internet Connection
 #ip link && read # add prompt
 echo 'Checking Internet Connection'
 ping -c 1 -q archlinux.org > /dev/null 2>&1
@@ -127,9 +58,8 @@ timedatectl set-ntp true
 # temp fix
 echo 'Formatting and mounting disks'
 mkfs.fat -F32 /dev/vda1
-mkswap /dev/vda2 && swapon /dev/vda2
-mount /dev/vda3 /mnt
-mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
+mkfs.ext4 /dev/vda3 && mount /dev/vda3 /mnt
+mkfs.ext4 /dev/vda4 && mkdir -p /mnt/home && mount /dev/vda4 /mnt/home
 
 # Install System
 echo 'Installing base system'
@@ -137,17 +67,80 @@ pacstrap -i /mnt base linux linux-firmware sudo nano curl
 echo 'System Installed'
 # Generate File System Table
 echo 'Generating File System Table'
-genfstab -U -p /mnt >> /mnt/etc/fstab
+genfstab -U -p /mnt > /mnt/etc/fstab
 echo "created /etc/fstab"
 # Move install file into /mnt
 echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
 # Chroot into system
 echo "Chrooting into system"
-arch-chroot /mnt /bin/bash /arch-install.sh -1
-# Download Install Script
-#cd ~/ && curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
-#chmod 711 ~/arch-install.sh && ~/arch-install.sh
+arch-chroot /mnt /bin/bash /arch-install.sh -a
+}
+
+function AFTER_CHROOT {
+#Chrooting into /mnt stopped the script. so here we are with another function
+echo 'Generating locales'
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo 'locales generated'
+echo 'Setting Time Zone'
+ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+hwclock --systohc --utc
+echo 'Time Zone Configured'
+echo 'Creating Hostname'
+USERHOSTNAME=archvm
+echo $USERHOSTNAME > /etc/hostname
+echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
+echo "Hostname set as $USERHOSTNAME"
+
+echo 'Updating System'
+pacman -Sy
+echo 'Installing NetworkManager Grub and EfiBootMgr'
+pacman -S networkmanager grub efibootmgr
+systemctl enable NetworkManager
+echo 'NetworkManager has been enabled'
+echo;echo 'set root password...'
+passwd
+# EFI
+echo 'Creating EFI partition'
+mkdir /boot/efi
+mount /dev/vda1 /boot/efi
+echo 'EFI partition created and mounted on /boot/efi'
+#lsblk # to check if everything is mounted correctly
+echo 'Installing grub'
+grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
+echo 'Grub installed..'
+echo 'Creating Grub Config file'
+grub-mkconfig -o /boot/grub/grub.cfg
+echo 'Grub Config created'
+
+	## SWAPFILE
+#allocate -l 3G /swapfile
+#chmod 600 /swapfile
+#mkswap /swapfile
+#swapon /swapfile
+#echo '/swapfile none swap sw 0 0' >> /etc/fstab
+#free -m
+
+## Swao Partition
+mkswap /dev/vda2 && swapon /dev/vda2
+
+## USER
+#read USERNAME
+echo 'Creating User'
+USERUSERNAME="arch-user"
+useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
+echo;echo 'Set User Password'
+passwd $USERUSERNAME
+echo 'User Creation Complete'
+#EDITOR=nano visudo
+echo 'Adding user to wheel group'
+sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+echo 'User now has sudo privledges'
+# add cron job here or something to boot script at next login
+mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
+echo 'You may now reboot your system'
 }
 
 #----------------------------------------------------
@@ -274,9 +267,24 @@ cd ~/.config/dmenu && sudo make install
 echo 'script complete'
 }
 
+
+
 						#~~~############~~~#
 						#~~ SCRIPT START ~~#
 						#~~~############~~~#
+
+
+
+# Flags
+while getopts ":a" option; do
+   case $option in
+      a) # Finish Part 1 script after chroot
+         AFTER_CHROOT
+         exit;;
+esac
+done
+
+
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
 options=("Part 1" "Part 2" "Quit")
@@ -285,6 +293,7 @@ do
     case $opt in
         "Part 1")
             part_1
+            #AFTER_CHROOT
             break
             ;;
         "Part 2")
@@ -307,17 +316,10 @@ do
     esac
 done
 
-# Flags
-while getopts ":123" option; do
-   case $option in
-      1) # Finish Part 1 script after chroot
-         AFTER_CHROOT
-         exit;;
-esac
-done
-
 #### TO DO #####
 # Make rc.lua_virtual
 # Make /etc/lightdm/lightdm.conf_virtual
 # Make wallpaper directory switcher script
 # Make xrandr script or something idk maybe .bashr
+# Enable sudo privlidges in tty
+# Fix /etc/sudoers issue
