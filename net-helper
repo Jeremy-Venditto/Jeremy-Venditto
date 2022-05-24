@@ -51,6 +51,7 @@ _CHECK_IPV6_PRIVATE_=$(ifconfig | grep 64 |  awk '/inet6/{print $2}')
 
 _VPN_NAME_=$(nmcli | grep "VPN connection" | cut -d ' ' -f 1)
 _CHECK_VPN_=$(nmcli -o | grep vpn > /dev/null; if [[ $? = 0 ]]; then echo -e ${cyan}"Connected to $_VPN_NAME_"${reset}; else echo -e ${yellow}"Not Connected"${reset}; fi )
+_CHECK_VPN_NOCOLOR=$(nmcli -o | grep vpn > /dev/null; if [[ $? = 0 ]]; then echo "Connected to $_VPN_NAME_"; else echo "Not Connected"; fi )
 
 
 
@@ -199,6 +200,41 @@ do
 done
 }
 
+
+function MAIN_NOCOLOR {
+ping -c 1 -q archlinux.org > /dev/null 2>&1
+if [[ $? = 0 ]]; then
+echo
+#echo "~~~~~~~~~~~~~INTERNET$~~~~~~~~~~~~~~~~~~~";
+echo "You are connected to the internet"
+#echo "~~~~~~~~~~~~~INTERFACE~~~~~~~~~~~~~~~~~~";
+echo "Interface: $_CHECK_INTERFACE_"
+#echo "~~~~~~~~~~~~~ROUTER_IP~~~~~~~~~~~~~~~~~~"
+echo "Access Point Name: "$WIFI_AP_NAME
+echo "Access Point MAC: "$WIFI_AP_MAC
+echo "Gateway: $_CHECK_GATEWAY_"
+#echo "~~~~~~~~~~~~~PRIVATE_IP~~~~~~~~~~~~~~~~~";
+echo "Local IPv4: $_CHECK_IPV4_PRIVATE_"
+#echo "Local IPv6: $_CHECK_IPV6_PRIVATE_"
+#echo "~~~~~~~~~~~~~MAC_ADDRESS~~~~~~~~~~~~~~~~";
+echo "Current MAC Address: $_CHECK_CURRENT_DEVICE_MAC_ADDRESS_"
+echo "Permanent MAC Addres: $_CHECK_PERMANENT_DEVICE_MAC_ADDRESS_"
+#echo "MAC Spoofing?"
+#echo "~~~~~~~~~~~~~$VPN_STATUS~~~~~~~~~~~~~~~~~"
+echo "VPN: $_CHECK_VPN_NOCOLOR"
+#echo "~~~~~~~~~~~~~DNS_SERVERS~~~~~~~~~~~~~~~~";
+echo "DNS (in attempt order): "
+echo "$_CHECK_DNS_"
+#echo "~~~~~~~~~~~~~PUBLIC_IP~~~~~~~~~~~~~~~~~~";
+echo "Public IPV4: $_CHECK_IPV4_"
+echo "Public IPV6: $_CHECK_IPV6_"
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+LIST_1
+else
+echo 'You are NOT connected to the internet';echo;echo "$_AVAILABLE_INTERFACES_" ;fi;}
+
+
+
 function _MAIN_ {
 ping -c 1 -q archlinux.org > /dev/null 2>&1
 if [[ $? = 0 ]]; then
@@ -233,5 +269,48 @@ LIST_1
 #_NMAP_LOCAL_NETWORK_;
 else
 echo -e ${red}'You are NOT connected to the internet'${reset};echo;echo -e ${yellow} $_AVAILABLE_INTERFACES_ ${reset};fi;}
+
+################################# HELP SCREEN #################################
+
+#Help()
+function HELP_FUNCTION {
+   # Display Help
+   echo
+   echo -e ${cyan}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+   echo
+   echo -e ${yellow}"                  \e[1mHelp Screen for net-helper\e[0m"${reset}
+   echo
+   echo "Syntax: [ |-h|-n|-v| ]"
+   echo
+   echo -e ${green}"Option:    Description:"${reset}
+   echo
+   echo "-h  ~~~~~  Print this Help."
+   echo "-n  ~~~~~  No Color Output"
+   echo "-v  ~~~~~  Print software version and exit."
+   echo
+   echo -e ${cyan}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
+}
+
+################################# Flag options #################################
+# Get the options
+while getopts ":hnv" option; do
+   case $option in
+      h) # Print Help Screen
+         HELP_FUNCTION
+         exit;;
+      n) # no color output
+         MAIN_NOCOLOR
+         exit;;
+      v) # version number
+        echo "0.6"
+         exit;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         exit;;
+   esac
+done
+
+
+
 _MAIN_; LIST_2_LOCAL_SETTINGS
 

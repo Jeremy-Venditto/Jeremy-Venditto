@@ -40,6 +40,14 @@ CUSTOM_4_NAME=''
 ################################################################
 ############### END USER CONFIGURATION #########################
 ################################################################
+
+# Just kidding.. heres some more user configuration
+
+FAVORITE_1_NAME='Laptop'
+FAVORITE_2_NAME='EMTPY'
+FAVORITE_3_NAME='EMPTY'
+FAVORITE_4_NAME='EMPTY'
+
 red="\e[0;91m"
 blue="\e[0;94m"
 cyan="\e[0;96m"
@@ -771,9 +779,11 @@ select opt in "${options[@]}"
 do
     case $opt in
         "$FAVORITE_1_NAME")
+        _CONFIG_LAPTOP_;EQUALIZER_MAIN_LIST
 echo 'hi favorite 1'
             ;;
         "$FAVORITE_2_NAME")
+
 echo 'hi favorite 2'
             ;;
         "$FAVORITE_3_NAME")
@@ -985,7 +995,7 @@ function _SWITCH_SINK_PROMPT_1_ { read -r -p "Is your Audio Working? [Y/n] " inp
 
 
 
-rm easy-audio_bluetooth-devices.tmp > /dev/null 2>&1
+rm /tmp/easy-audio_bluetooth-devices.tmp > /dev/null 2>&1
 rm /tmp/easy-audio/easy-audio_bluetooth-list.tmp > /dev/null 2>&1
 
 
@@ -1116,15 +1126,15 @@ echo;echo 'Paired Devices:'
 bluetoothctl paired-devices
 echo;echo 'Available Devices:'
 #bluetoothctl devices > easy-audio_bluetooth-devices.tmp
-awk '{printf("%1d: %s\n", NR, $0)}' easy-audio_bluetooth-devices.tmp > /dev/null 2>&1
+awk '{printf("%1d: %s\n", NR, $0)}' /tmp/easy-audio/easy-audio_bluetooth-devices.tmp > /dev/null 2>&1
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAIR DEVICES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function _PAIR_DEVICE_2_ {
 echo;echo 'Paired Devices:'
 bluetoothctl paired-devices & bluetoothctl paired-devices > /tmp/easy-audio/easy-audio_bluetooth-devices.tmp
-bluetoothctl devices >> easy-audio_bluetooth-devices.tmp 
-cat easy-audio_bluetooth-devices.tmp | awk '!_[$0]++' > /tmp/easy-audio/easy-audio_bluetooth-list.tmp #&& rm easy-audio_bluetooth-devices.tmp # SCAN NEEDS THIS
+bluetoothctl devices >> /tmp/easy-audio/easy-audio_bluetooth-devices.tmp 
+cat /tmp/easy-audio/easy-audio_bluetooth-devices.tmp | awk '!_[$0]++' > /tmp/easy-audio/easy-audio_bluetooth-list.tmp #&& rm easy-audio_bluetooth-devices.tmp # SCAN NEEDS THIS
 #bluetoothctl devices > easy-audio_bluetooth-devices.tmp
 echo;echo -e ${yellow}'Connect to Bluetooth Device:'${reset}
 echo -e ${blue}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
@@ -1434,10 +1444,10 @@ if [[ $chosen_device = "b" ]]; then _MAIN_BLUETOOTH_;fi
 # Scan More Devices
 if [[ $chosen_device = "s" ]]; then 
 echo;echo -e ${bold}${cyan}"Scan will finish after 10 seconds"${reset};echo;TURN_ON_BT
-timeout 10 bluetoothctl scan on & timeout 10 bluetoothctl scan on > easy-audio_bluetooth-devices.tmp
-sed -i "/Discovering/d" easy-audio_bluetooth-devices.tmp; sed -i "/Discovery/d" easy-audio_bluetooth-devices.tmp; ./easy-audio -c
+timeout 10 bluetoothctl scan on & timeout 10 bluetoothctl scan on > /tmp/easy-audio/easy-audio_bluetooth-devices.tmp
+sed -i "/Discovering/d" easy-audio_bluetooth-devices.tmp; sed -i "/Discovery/d" /tmp/easy-audio/easy-audio_bluetooth-devices.tmp; ./easy-audio -c
 #fi
-sed -i "/CHG/d" easy-audio_bluetooth-devices.tmp;sed -i "/DEL/d" easy-audio_bluetooth-devices.tmp;
+sed -i "/CHG/d" /tmp/easy-audio/easy-audio_bluetooth-devices.tmp;sed -i "/DEL/d" /tmpt/easy-audio/easy-audio_bluetooth-devices.tmp;
 fi
 # Quit
 if [[ $chosen_device = "q" ]]; then exit 1;fi
@@ -1454,7 +1464,7 @@ HARD_BLOCK
 echo -e ${bold}${uline}${blue}"Bluetooth Menu"${reset} #${yellow}
 PS3='Please enter your choice: '
 # Connect to Device, Disconnect from device, Scan Devices
-options=("Connect to Device" "Disconnect Device" "Enable Bluetooth" "Disable Bluetooth" "Change Audio Sink" "Quit")
+options=("Connect to Device" "Disconnect Device" "Enable Bluetooth" "Disable Bluetooth" "Change Audio Sink" "Configured Devices" "Main Menu" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -1477,15 +1487,6 @@ read -r -p "Turn Off Bluetooth? [Y/n] " input ; case $input in [yY][eE][sS]|[yY]
 
             break
             ;;
-        "Change Audio Sink")
-	_AUDIO_SWITCHER_
-	./easy-audio -a
-            break
-            ;;
-	"Configured Devices")
-	_CONFIGURED_DEVICES_
-	    break
-	    ;;
 	"Enable Bluetooth")
 	rfkill unblock bluetooth
 	_MAIN_BLUETOOTH_
@@ -1495,6 +1496,19 @@ read -r -p "Turn Off Bluetooth? [Y/n] " input ; case $input in [yY][eE][sS]|[yY]
 	_MAIN_BLUETOOTH_
 	    break
 	    ;;
+        "Change Audio Sink")
+        _AUDIO_SWITCHER_
+        ./easy-audio -a
+            break
+            ;;
+        "Configured Devices")
+        _CONFIGURED_DEVICES_
+            break
+            ;;
+        "Main Menu")
+        _MAIN_CHANGE_SINK_
+            break
+            ;;
         "Quit")
             break
             ;;
@@ -1683,6 +1697,8 @@ read -r -p "Turn on Bluetooth? [Y/n] " input ; case $input in
 function _RAW_LIST_ {
 # Displays all Sinks and Names in case the script breaks.. must be selected from main menu (l)
 
+## Currently Broken
+
 sink_2_=$(pacmd list-sinks | grep -B2 index | grep -e '2' | grep -v '12')
 sink_0_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 0" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 1p)
 sink_1_=$(pacmd list-sinks | grep index | grep -e '1' | grep -v '10' | grep -v '11' | grep -v '12' | grep -v '13' | grep -v '14' | grep -v '15' | grep -v '16' | grep -v '17' | grep -v '18' | sed 's/^.*\(.\{1\}\)$/\1/')
@@ -1698,6 +1714,12 @@ sink_9_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 9" && p
 sink_10_=$(pacmd list-sinks | grep -B50 index | grep index | grep "index: 10" && pacmd list-sinks | grep -A200 index | grep device.description  | sed -n 11p)
 echo "$sink_0_";echo "$sink_1_";echo "$sink_2_";echo "$sink_3_";echo "$sink_4_";echo "$sink_5_";echo "$sink_6_";echo "$sink_7_";echo "$sink_8_";echo "$sink_9_"; echo "$sink_10_"
 }
+
+
+## Info about current sink
+volume_level_sink=$(pacmd list-sinks | grep -A20 "*" | grep base | cut -c 15-16)
+volume_level_master=$(pacmd list-sinks | grep -A20 "*" | grep "volume: front-left" | cut -d ' ' -f6 | cut -c 1-3)
+check_mute=$(pacmd list-sinks | grep -A20 "*" | grep muted | cut -d ' ' -f2)
 
 function _CHANGE_SINK_PROMPT_FULL_ {
 #echo " - - - - - - - - - - - - - "
@@ -1725,6 +1747,7 @@ echo -e ${blue}"b"${reset}":"${blue}" bluetooth"${reset}
 #echo " - - - - - - - - - - - - - "
 echo -e ${cyan}"e"${reset}":"${cyan}" equalizer settings"${reset}
 echo " - - - - - - - - - - - - - "
+echo "Volume: ${voulme_level}%"
 echo -e ${yellow}"m"${reset}":"${yellow}" Volume Mixer"${reset}
 echo "r: reset sink numbers"
 echo "q: quit"
@@ -1783,9 +1806,15 @@ echo 'ughh'
 ######################   SCRIPT   #############################
 #####################              ############################
 ###############################################################
+
+
+
 function _MAIN_CHANGE_SINK_ {
 echo -e ${bold}"---------- Current Sink -------------"${reset}
 echo -e "Sink" ${bold}${green}"$CURRENT_SINK"${reset}":" ${green}"$CURRENT_SINK_NAME"${reset}
+#echo "Sink Volume Level: ${volume_level_sink}% Muted: ${check_mute}"
+#echo "Master Volume Level: $volume_level_master"
+echo "      Volume: $volume_level_master    Muted: $check_mute"
 echo -e ${bold}"--------- Available Sinks -----------"${reset}
 CURRENT_SINK_NAMES > /tmp/easy-audio/easy-audio_sink-2.tmp
 LONG_NAME_1
@@ -1869,7 +1898,7 @@ while getopts ":abcdefhlsv" option; do
         EQUALIZER_FULL
          exit;;
       f) # Connect to Equalizer Favorite 1
-         echo 'hi'
+cp ~/.config/pulse/eq-config/laptop ~/.config/pulse/equalizerrc && TURN_ON_EQUALIZER
          exit;;
       h) # display Help
          HELP_FUNCTION
@@ -1881,7 +1910,7 @@ while getopts ":abcdefhlsv" option; do
          echo 'scanning.. not'
          exit;;
       v) # version number
-        echo "0.3"
+        echo "0.4"
          exit;;
      \?) # Invalid option
          echo "Error: Invalid option"
@@ -1905,3 +1934,9 @@ _CHANGE_SINK_PROMPT_FULL_
 }
 echo
 _MAIN_START_
+
+
+
+## features to come:
+# volume level
+#pacmd list-sinks | grep -A20 "*" | grep base | cut -c 15-16
