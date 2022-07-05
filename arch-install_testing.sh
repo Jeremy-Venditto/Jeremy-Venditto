@@ -178,7 +178,7 @@ passwd
 # EFI
 echo 'Creating EFI partition'
 mkdir /boot/efi
-mount /dev/vda1 /boot/efi
+mount $EFI_PART /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
 #lsblk # to check if everything is mounted correctly
 echo 'Installing grub'
@@ -197,7 +197,9 @@ echo 'Grub Config created'
 #free -m
 
 ## Swao Partition
-mkswap /dev/vda2 && swapon /dev/vda2
+
+mkswap $SWAP_PART && swapon $SWAP_PART
+#mkswap /dev/vda2 && swapon /dev/vda2
 
 ## USER
 #read USERNAME
