@@ -33,6 +33,6 @@ read -rp "" -e -i "/dev/" DEVICE;echo
 echo -e "${bold}Write file ${reset}${cyan}$FILE${reset}${bold} to device ${reset}${cyan}$DEVICE${reset}${bold}"?"${reset}"
 read -r -p "Are You Sure? [Y/n] " input ; case $input in
 	# Execute Command
-#    [yY][eE][sS]|[yY]) sudo dd if=$FILE of=$DEVICE bs=1M ;;
-    [yY][eE][sS]|[yY]) echo 'dd..ing' ;;
+    [yY][eE][sS]|[yY]) sudo dd if=$FILE of=$DEVICE bs=1M status=progress ;;
+#    [yY][eE][sS]|[yY]) echo 'dd..ing' ;;
     [nN][oO]|[nN]) exit 1 ;; *) echo "Invalid input...";;esac

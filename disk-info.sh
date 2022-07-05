@@ -204,7 +204,7 @@ function HELP_FUNCTION {
 
 ################################# Flag options #################################
 # Get the options
-while getopts ":ghnsvx" option; do
+while getopts ":ghnsuvx" option; do
    case $option in
       g) # globbed together with color
          COLOR
@@ -217,6 +217,9 @@ while getopts ":ghnsvx" option; do
          exit;;
       s) # separate lines
          COLOR_SEPARATE_LINES
+         exit;;
+      u) # Show Only UUID Drives
+         ./disk-info.sh -n | grep -v "UUID: none" | grep -B1 UUID
          exit;;
       x) # no color separate lines
          NO_COLOR_SEPARATE_LINES
