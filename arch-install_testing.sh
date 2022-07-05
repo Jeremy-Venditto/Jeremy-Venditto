@@ -106,7 +106,10 @@ mkfs.ext4 $ROOT_PART
 mount $ROOT_PART /mnt > /dev/null
 echo "ROOT PARTITION mounted on $ROOT_PART"
 # Create Home Partition mounted to /mnt/home
+
+### RECENTLY UNCOMMENTED
 #read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
+
 mkfs.ext4 $HOME_PART
 mkdir -p /mnt/home
 mount $HOME_PART /mnt/home > /dev/null ;;
@@ -214,7 +217,8 @@ echo 'Adding user to wheel group'
 sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo 'User now has sudo privledges'
 # add cron job here or something to boot script at next login
-mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
+mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
+#mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
 echo 'You may now reboot your system'
 }
 
