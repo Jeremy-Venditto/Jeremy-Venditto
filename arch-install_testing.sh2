@@ -85,7 +85,7 @@ read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
 #mount $HOME_PART /mnt/home > /dev/null
 #echo "HOME PARTITION mounted on $HOME_PART"
 
-echo -rp "Machine Hostname: " -e -i HOSTNAME
+read -rp "Machine Hostname: " -e -i HOSTNAME
 echo $HOSTNAME > hostname.txt
 echo
 echo "Install Drive: $INSTALL_DRIVE"
