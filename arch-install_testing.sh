@@ -369,7 +369,7 @@ AUTOMATED_ALL
 
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
-options=("Part 1" "Part 2" "Quit")
+options=("Arch ISO Environment" "Userspace Shell" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
