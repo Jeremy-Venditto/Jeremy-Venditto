@@ -106,7 +106,7 @@ mkfs.ext4 $ROOT_PART
 mount $ROOT_PART /mnt > /dev/null
 echo "ROOT PARTITION mounted on $ROOT_PART"
 # Create Home Partition mounted to /mnt/home
-read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
+#read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
 mkfs.ext4 $HOME_PART
 mkdir -p /mnt/home
 mount $HOME_PART /mnt/home > /dev/null ;;
