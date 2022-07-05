@@ -65,11 +65,13 @@ lsblk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
 #cfdisk $INSTALL_DRIVE
 # Create EFI Partition (not mounted)
-read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART > efi.txt
+read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
+echo $EFI_PART > efi.txt
 #mkfs.fat -F32 $EFI_PART > /dev/null
 #echo "EFI Partition created on $EFI_PART"
 # Create Swap Partition (don't swap on yet)
-read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART > swap.txt
+read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
+echo $SWAP_PART > swap.txt
 #mkswap $SWAP_PART > /dev/null
 # Create Root Partition mounted to /mnt
 read -rp "ROOT PARTITION: " -e -i /dev/ ROOT_PART
