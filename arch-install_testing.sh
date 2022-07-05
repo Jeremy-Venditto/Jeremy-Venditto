@@ -66,7 +66,7 @@ read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
 #cfdisk $INSTALL_DRIVE
 # Create EFI Partition (not mounted)
 read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
-#mkfs.fat -F32 $USEREFI > /dev/null
+#mkfs.fat -F32 $EFI_PART > /dev/null
 #echo "EFI Partition created on $EFI_PART"
 # Create Swap Partition (don't swap on yet)
 read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
@@ -96,11 +96,11 @@ read -r -p "Coninue with disk formatting? [Y/n] " input ; case $input in
 cfdisk $INSTALL_DRIVE # Make this automated
 
 # Create EFI Partition (not mounted)
-mkfs.fat -F32 $USEREFI > /dev/null
+mkfs.fat -F32 $EFI_PART > /dev/null
 echo "EFI Partition created on $EFI_PART"
 # Create Swap Space (Partition or file (don't swap on yet))
 mkswap $SWAP_PART > /dev/null
-if [[ -z $SWAP_PART ]] then echo "SWAP file set up on (edit me)"; else echo "SWAP space set up on $SWAP_PART";fi
+if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo "SWAP space set up on $SWAP_PART";fi
 # Create Root Partition mounted to /mnt
 mkfs.ext4 $ROOT_PART
 mount $ROOT_PART /mnt > /dev/null
