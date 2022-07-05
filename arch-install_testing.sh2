@@ -85,6 +85,8 @@ read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
 #mount $HOME_PART /mnt/home > /dev/null
 #echo "HOME PARTITION mounted on $HOME_PART"
 
+echo -rp "Machine Hostname: " -e -i HOSTNAME
+echo $HOSTNAME > hostname.txt
 echo
 echo "Install Drive: $INSTALL_DRIVE"
 echo "EFI Partiton: $EFI_PART"
@@ -158,8 +160,9 @@ arch-chroot /mnt /bin/bash /arch-install.sh -a
 }
 
 function ISO_AFTER_CHROOT {
-ROOT_PART=$(cat swap.txt)
+SWAP_PART=$(cat swap.txt)
 EFI_PART=$(cat efi.txt)
+HOSTNAME=$(cat hostname.txt)
 
 #Chrooting into /mnt stopped the script. so here we are with another function
 echo 'Generating locales'
@@ -172,8 +175,9 @@ ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
 hwclock --systohc --utc
 echo 'Time Zone Configured'
 echo 'Creating Hostname'
-USERHOSTNAME=archvm
-echo $USERHOSTNAME > /etc/hostname
+#USERHOSTNAME=archvm
+#echo $USERHOSTNAME > /etc/hostname
+echo $HOSTNAME > /etc/hostname
 echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
 echo "Hostname set as $USERHOSTNAME"
 
