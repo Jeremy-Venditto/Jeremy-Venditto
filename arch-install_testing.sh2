@@ -102,8 +102,12 @@ cfdisk $INSTALL_DRIVE # Make this automated
 # Create EFI Partition (not mounted)
 mkfs.fat -F32 $EFI_PART > /dev/null
 echo "EFI Partition created on $EFI_PART"
-# Create Swap Space (Partition or file (don't swap on yet))
-mkswap $SWAP_PART > /dev/null
+	# Create Swap Space (Partition or file (don't swap on yet))
+#	mkswap $SWAP_PART > /dev/null
+
+# Create Swap
+mkswap $SWAP_PART && swapon $SWAP_PART
+
 if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo "SWAP space set up on $SWAP_PART";fi
 # Create Root Partition mounted to /mnt
 mkfs.ext4 $ROOT_PART
@@ -111,8 +115,6 @@ mount $ROOT_PART /mnt > /dev/null
 echo "ROOT PARTITION mounted on $ROOT_PART"
 # Create Home Partition mounted to /mnt/home
 
-### RECENTLY UNCOMMENTED
-#read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
 
 mkfs.ext4 $HOME_PART
 mkdir -p /mnt/home
@@ -152,7 +154,7 @@ echo "created /etc/fstab"
 # Move install file into /mnt
 echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
-mv swap.txt /mnt/
+#mv swap.txt /mnt/
 mv efi.txt /mnt/
 # Chroot into system
 echo "Chrooting into system"
@@ -160,7 +162,7 @@ arch-chroot /mnt /bin/bash /arch-install.sh -a
 }
 
 function ISO_AFTER_CHROOT {
-SWAP_PART=$(cat swap.txt)
+#SWAP_PART=$(cat swap.txt)
 EFI_PART=$(cat efi.txt)
 HOSTNAME=$(cat hostname.txt)
 
@@ -198,14 +200,16 @@ echo 'EFI partition created and mounted on /boot/efi'
 echo
 echo
 echo
-echo 'Installing grub'
 read
-grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
-echo 'Grub installed..'
-echo 'Creating Grub Config file'
-grub-mkconfig -o /boot/grub/grub.cfg
-echo 'Grub Config created'
-read
+
+#echo 'Installing grub'
+#read
+#grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
+#echo 'Grub installed..'
+#echo 'Creating Grub Config file'
+#grub-mkconfig -o /boot/grub/grub.cfg
+#echo 'Grub Config created'
+#read
 	## SWAPFILE
 #allocate -l 3G /swapfile
 #chmod 600 /swapfile
@@ -216,7 +220,7 @@ read
 
 ## Swao Partition
 
-mkswap $SWAP_PART && swapon $SWAP_PART
+#mkswap $SWAP_PART && swapon $SWAP_PART
 #mkswap /dev/vda2 && swapon /dev/vda2
 
 ## USER
