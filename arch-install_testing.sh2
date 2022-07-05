@@ -85,7 +85,7 @@ read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
 #mount $HOME_PART /mnt/home > /dev/null
 #echo "HOME PARTITION mounted on $HOME_PART"
 
-read -rp "Machine Hostname: " -e -i HOSTNAME
+read -rp "Machine Hostname: " HOSTNAME
 echo $HOSTNAME > hostname.txt
 echo
 echo "Install Drive: $INSTALL_DRIVE"
@@ -195,13 +195,17 @@ mkdir /boot/efi
 mount $EFI_PART /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
 #lsblk # to check if everything is mounted correctly
+echo
+echo
+echo
 echo 'Installing grub'
+read
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
 echo 'Grub installed..'
 echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
 echo 'Grub Config created'
-
+read
 	## SWAPFILE
 #allocate -l 3G /swapfile
 #chmod 600 /swapfile
@@ -225,8 +229,8 @@ passwd $USERUSERNAME
 echo 'User Creation Complete'
 #EDITOR=nano visudo
 echo 'Adding user to wheel group'
-sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-echo 'User now has sudo privledges'
+
+sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers && echo 'User now has sudo privledges' || echo 'bad'
 # add cron job here or something to boot script at next login
 mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
 #mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
