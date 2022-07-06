@@ -156,6 +156,7 @@ echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
 #mv swap.txt /mnt/
 mv efi.txt /mnt/
+mv hostname.txt /mnt/
 # Chroot into system
 echo "Chrooting into system"
 arch-chroot /mnt /bin/bash /arch-install.sh -a
