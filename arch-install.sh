@@ -351,8 +351,7 @@ sudo systemctl enable lightdm
 # Change LightDM settings
 if [[ $MACHINE = DESKTOP ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = LAPTOP ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
-                                                                              # fix me make me a vm not a laptop... we dont exist yet in dotfiles
-if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
+if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
 # Change Nitrogen Settings
 if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
@@ -361,7 +360,8 @@ if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/
 
 # Change Grub Wallpaper
 #sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
-sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
+#sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
+sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 
 # Enable nano syntax highlighting
