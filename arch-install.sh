@@ -2,7 +2,34 @@
 
 # My Arch Linux Install
 
+#automated answers
+#printf '%s\n' y | arch-install.sh
+
 #----------------------------------------------------
+function AUTOMATED_ALL {
+read -r -p "Automate Script? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY]) AUTOMATED=YES ;;
+    [nN][oO]|[nN]) AUTOMATED=NO      ;; *) echo "Invalid input...";exit 1;;esac
+}
+function AUTOMATED_DESKTOP {
+echo 'hi'
+}
+function AUTOMATED_LAPTOP {
+echo 'hi'
+}
+function AUTOMATED_VM {
+cat ~/jeremy-venditto/automated_vm.txt << 'EOF'
+y
+n
+n
+y
+y
+n
+EOF
+~/jeremy-venditto/automated_vm.txt | ~/jeremy-venditto/arch-install.sh
+}
+
+
 function ARCH_ISO {
 
 # Initial ISO install.. manual intervention is required for this step as of now
@@ -36,31 +63,63 @@ timedatectl set-ntp true
 lsblk
 # Select Installation Hard Disk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
-cfdisk $INSTALL_DRIVE
+#cfdisk $INSTALL_DRIVE
 # Create EFI Partition (not mounted)
 read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
-mkfs.fat -F32 $USEREFI
-echo "EFI Partition created on $EFI_PART"
+echo $EFI_PART > efi.txt
+#mkfs.fat -F32 $EFI_PART > /dev/null
+#echo "EFI Partition created on $EFI_PART"
 # Create Swap Partition (don't swap on yet)
 read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
-mkswap $SWAP_PART
+echo $SWAP_PART > swap.txt
+#mkswap $SWAP_PART > /dev/null
 # Create Root Partition mounted to /mnt
 read -rp "ROOT PARTITION: " -e -i /dev/ ROOT_PART
-mkfs.ext4 $ROOT_PART
-mount $ROOT_PART /mnt
-echo "ROOT PARTITION mounted on $ROOT_PART"
+#mkfs.ext4 $ROOT_PART
+#mount $ROOT_PART /mnt > /dev/null
+#echo "ROOT PARTITION mounted on $ROOT_PART"
 # Create Home Partition mounted to /mnt/home
 read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
-mkfs.ext4 $HOME_PART
-mkdir /mnt/home
-mount $HOME_PART /mnt/home
-echo "HOME PARTITION mounted on $HOME_PART"
+#mkfs.ext4 $HOME_PART
+#mkdir /mnt/home
+#mount $HOME_PART /mnt/home > /dev/null
+#echo "HOME PARTITION mounted on $HOME_PART"
+
+read -rp "Machine Hostname: " HOSTNAME
+echo $HOSTNAME > hostname.txt
 echo
 echo "Install Drive: $INSTALL_DRIVE"
 echo "EFI Partiton: $EFI_PART"
 echo "SWAP Partition: $SWAP_PART"
 echo "Root Partition: $ROOT_PART"
 echo "Home Partition: $HOME_PART"
+read -r -p "Coninue with disk formatting? [Y/n] " input ; case $input in
+    [yY][eE][sS]|[yY])
+
+# Partition Drive (manual as of now)
+cfdisk $INSTALL_DRIVE # Make this automated
+
+# Create EFI Partition (not mounted)
+mkfs.fat -F32 $EFI_PART > /dev/null
+echo "EFI Partition created on $EFI_PART"
+	# Create Swap Space (Partition or file (don't swap on yet))
+#	mkswap $SWAP_PART > /dev/null
+
+# Create Swap
+mkswap $SWAP_PART && swapon $SWAP_PART
+
+if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo "SWAP space set up on $SWAP_PART";fi
+# Create Root Partition mounted to /mnt
+mkfs.ext4 $ROOT_PART
+mount $ROOT_PART /mnt > /dev/null
+echo "ROOT PARTITION mounted on $ROOT_PART"
+# Create Home Partition mounted to /mnt/home
+
+
+mkfs.ext4 $HOME_PART
+mkdir -p /mnt/home
+mount $HOME_PART /mnt/home > /dev/null ;;
+    [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";exit 1;;esac
 lsblk
 read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY]) echo "Yes" ;;
@@ -95,12 +154,18 @@ echo "created /etc/fstab"
 # Move install file into /mnt
 echo "Install Script moved to /mnt"
 mv arch-install.sh /mnt/
+#mv swap.txt /mnt/
+mv efi.txt /mnt/
 # Chroot into system
 echo "Chrooting into system"
 arch-chroot /mnt /bin/bash /arch-install.sh -a
 }
 
 function ISO_AFTER_CHROOT {
+#SWAP_PART=$(cat swap.txt)
+EFI_PART=$(cat efi.txt)
+HOSTNAME=$(cat hostname.txt)
+
 #Chrooting into /mnt stopped the script. so here we are with another function
 echo 'Generating locales'
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
@@ -112,15 +177,16 @@ ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
 hwclock --systohc --utc
 echo 'Time Zone Configured'
 echo 'Creating Hostname'
-USERHOSTNAME=archvm
-echo $USERHOSTNAME > /etc/hostname
+#USERHOSTNAME=archvm
+#echo $USERHOSTNAME > /etc/hostname
+echo $HOSTNAME > /etc/hostname
 echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
 echo "Hostname set as $USERHOSTNAME"
 
 echo 'Updating System'
 pacman -Sy
 echo 'Installing NetworkManager Grub and EfiBootMgr'
-pacman -S networkmanager grub efibootmgr
+pacman -S networkmanager grub efibootmgr --noconfirm
 systemctl enable NetworkManager
 echo 'NetworkManager has been enabled'
 echo;echo 'set root password...'
@@ -128,16 +194,18 @@ passwd
 # EFI
 echo 'Creating EFI partition'
 mkdir /boot/efi
-mount /dev/vda1 /boot/efi
+mount $EFI_PART /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
 #lsblk # to check if everything is mounted correctly
+
 echo 'Installing grub'
-grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
+#read
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable
 echo 'Grub installed..'
 echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
 echo 'Grub Config created'
-
+#read
 	## SWAPFILE
 #allocate -l 3G /swapfile
 #chmod 600 /swapfile
@@ -147,7 +215,9 @@ echo 'Grub Config created'
 #free -m
 
 ## Swao Partition
-mkswap /dev/vda2 && swapon /dev/vda2
+
+#mkswap $SWAP_PART && swapon $SWAP_PART
+#mkswap /dev/vda2 && swapon /dev/vda2
 
 ## USER
 #read USERNAME
@@ -158,11 +228,15 @@ echo;echo 'Set User Password'
 passwd $USERUSERNAME
 echo 'User Creation Complete'
 #EDITOR=nano visudo
+
+# Add user to wheel group for sudo privlidges
 echo 'Adding user to wheel group'
-sudo sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-echo 'User now has sudo privledges'
+echo "%wheel ALL=(ALL:ALL) ALL" | sudo EDITOR='tee -a' visudo
+
+#sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers && echo 'User now has sudo privledges' || echo 'bad'
 # add cron job here or something to boot script at next login
-mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
+mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
+#mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
 echo 'You may now reboot your system'
 }
 
@@ -182,14 +256,17 @@ do
     case $opt in
         "Laptop")
 	    MACHINE="LAPTOP"
+#	    if [[ $AUTOMATED=YES ]];then AUTOMATED_LAPTOP;fi
             break
             ;;
         "Desktop")
 	    MACHINE="DESKTOP"
+#           if [[ $AUTOMATED=YES ]];then AUTOMATED_DESKTOP;fi
             break
             ;;
         "Virtual Machine")
 	    MACHINE="VIRTUAL"
+#           if [[ $AUTOMATED=YES ]];then AUTOMATED_VM;fi
             break
             ;;
         "Quit")
@@ -204,7 +281,7 @@ done
 			##################
 
 # Install git and build tools
-sudo pacman -S git autoconf make gcc perl fakeroot automake
+sudo pacman -S git autoconf make gcc perl fakeroot automake --noconfirm
 
 # Make folder named jeremy-venditto in the home folder
 mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
@@ -225,15 +302,18 @@ sudo pacman -Syyu
 sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 ## Install Packages
 	#Packages for all machine types
-#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox
+#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox --noconfirm
         #Install yay AUR helper
 git clone https://aur.archlinux.org/yay
-cd yay && makepkg -si
+cd yay && makepkg -si --noconfirm
         #Install machine specific packages
-if [[ $MACHINE = "DESKTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt && yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt;fi
-if [[ $MACHINE = "LAPTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt && yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt;fi
-if [[ $MACHINE = "VIRTUAL" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt && yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt;fi
+if [[ $MACHINE = "DESKTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt --noconfirm;fi
+if [[ $MACHINE = "LAPTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt --noconfirm;fi
+if [[ $MACHINE = "VIRTUAL" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt --noconfirm;fi
 
 
 			###################
@@ -271,7 +351,8 @@ sudo systemctl enable lightdm
 # Change LightDM settings
 if [[ $MACHINE = DESKTOP ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = LAPTOP ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
-if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
+                                                                              # fix me make me a vm not a laptop... we dont exist yet in dotfiles
+if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
 # Change Nitrogen Settings
 if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
@@ -279,7 +360,9 @@ if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallp
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 # Change Grub Wallpaper
-sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
+#sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
+sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
+sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 
 # Enable nano syntax highlighting
 ~/jeremy-venditto/bash-scripts/nano-syntax-highlighting.sh
@@ -308,9 +391,12 @@ esac
 done
 
 
+# AUTOMATED PROMPT
+AUTOMATED_ALL
+
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
-options=("Part 1" "Part 2" "Quit")
+options=("Arch ISO Environment" "Userspace Shell" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
