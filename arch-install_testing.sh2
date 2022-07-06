@@ -197,18 +197,14 @@ mkdir /boot/efi
 mount $EFI_PART /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
 #lsblk # to check if everything is mounted correctly
-echo
-echo
-echo
-read
 
-#echo 'Installing grub'
+echo 'Installing grub'
 #read
-#grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi --removable
-#echo 'Grub installed..'
-#echo 'Creating Grub Config file'
-#grub-mkconfig -o /boot/grub/grub.cfg
-#echo 'Grub Config created'
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable
+echo 'Grub installed..'
+echo 'Creating Grub Config file'
+grub-mkconfig -o /boot/grub/grub.cfg
+echo 'Grub Config created'
 #read
 	## SWAPFILE
 #allocate -l 3G /swapfile
@@ -232,9 +228,12 @@ echo;echo 'Set User Password'
 passwd $USERUSERNAME
 echo 'User Creation Complete'
 #EDITOR=nano visudo
-echo 'Adding user to wheel group'
 
-sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers && echo 'User now has sudo privledges' || echo 'bad'
+# Add user to wheel group for sudo privlidges
+echo 'Adding user to wheel group'
+echo "wheel ALL=(ALL:ALL) ALL" | sudo EDITOR='tee -a' visudo
+
+#sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers && echo 'User now has sudo privledges' || echo 'bad'
 # add cron job here or something to boot script at next login
 mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
 #mv /arch-install.sh /home/$USERUSERNAME/ && chmod arch-user /home/arch-user/arch-install.sh
