@@ -64,6 +64,7 @@ read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
 echo $EFI_PART > efi.txt # EFI_PART variable is lost after arch-chroot
 mkfs.fat -F32 $EFI_PART > /dev/null
 echo "EFI Partition created on $EFI_PART"
+mount --mkdir $EFI_PART /mnt/boot/efi
 
 # Create Swap Partition
 read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
@@ -88,7 +89,7 @@ echo "ROOT PARTITION mounted on $ROOT_PART"
 # Create Home Partition mounted to /mnt/home
 read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
 mkfs.ext4 $HOME_PART
-mkdir -p /mnt/home
+ mkdir -p /mnt/home
 mount $HOME_PART /mnt/home > /dev/null
 
 # Assign Computer Hostname to system
@@ -221,8 +222,8 @@ echo 'User Creation Complete'
 
 # EFI
 echo 'Creating EFI partition'
-mkdir /boot/efi
-mount $EFI_PART /boot/efi
+#mkdir /boot/efi
+#mount $EFI_PART /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
 #lsblk # to check if everything is mounted correctly
 
