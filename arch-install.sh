@@ -222,15 +222,18 @@ echo 'User Creation Complete'
 
 # EFI
 echo 'Creating EFI partition'
-#mkdir /boot/efi
-#mount $EFI_PART /boot/efi
+mkdir /boot/efi
+mount $EFI_PART /boot/efi
 echo 'EFI partition created and mounted on /boot/efi'
 #lsblk # to check if everything is mounted correctly
 
+# Configure mkinitcpio again (worked without it on a VM but not on my 2nd laptop)
+mkinitcpio -P
+
 # Grub Bootloader
 echo 'Installing grub'
-#grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
-grub-install
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
+#grub-install
 echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
 echo 'Grub Config created'
