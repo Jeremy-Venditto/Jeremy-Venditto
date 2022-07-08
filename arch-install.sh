@@ -229,7 +229,8 @@ echo 'EFI partition created and mounted on /boot/efi'
 
 # Grub Bootloader
 echo 'Installing grub'
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
+#grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
+grub-install
 echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
 echo 'Grub Config created'
