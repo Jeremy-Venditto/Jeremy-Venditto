@@ -12,24 +12,6 @@
 
 # My Arch Linux Install
 #----------------------------------------------------
-        #####################
-        ### Define Colors ###
-        #####################
-
-red="\e[0;91m"
-blue="\e[0;94m"
-cyan="\e[0;96m"
-magenta="\e[0;95m"
-expand_bg="\e[K"
-blue_bg="\e[0;104m${expand_bg}"
-red_bg="\e[0;101m${expand_bg}"
-green_bg="\e[0;102m${expand_bg}"
-green="\e[0;92m"
-white="\e[0;97m"
-yellow="\e[0;93m"
-bold="\e[1m"
-uline="\e[4m"
-reset="\e[0m"
 
 	#########################
 	### Script Automation ###
@@ -64,12 +46,10 @@ EOF
 function DISKS_PARTITIONS {
 
 # View Disks before modifying
-echo -e ${yellow};lsblk;echo -e ${reset}${blue}
-
+lsblk
 # Select Installation Hard Disk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
 #cfdisk $INSTALL_DRIVE
-echo -e ${reset}
 
 read -r -p "Coninue with disk formatting? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY])
@@ -82,15 +62,15 @@ cfdisk $INSTALL_DRIVE # Make this automated
 # Create EFI Partition (not mounted)
 read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
 echo $EFI_PART > efi.txt # EFI_PART variable is lost after arch-chroot
-mkfs.fat -F32 -f $EFI_PART > /dev/null
-echo -e ${cyan}"EFI Partition created on $EFI_PART"${reset}
+mkfs.fat -F32 $EFI_PART > /dev/null
+echo "EFI Partition created on $EFI_PART"
 mount --mkdir $EFI_PART /mnt/boot/efi
 
 # Create Swap Partition
 read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
 echo $SWAP_PART > swap.txt # SWAP_PART variable is lost after arch-chroot
 mkswap $SWAP_PART && swapon $SWAP_PART
-if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo -e ${cyan}"SWAP space set up on $SWAP_PART"${reset};fi
+if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo "SWAP space set up on $SWAP_PART";fi
         ## SWAPFILE
 #allocate -l 3G /swapfile
 #chmod 600 /swapfile
@@ -102,30 +82,27 @@ if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo -e 
 
 # Create Root Partition mounted to /mnt
 read -rp "ROOT PARTITION: " -e -i /dev/ ROOT_PART
-mkfs.ext4 -f $ROOT_PART
+mkfs.ext4 $ROOT_PART
 mount $ROOT_PART /mnt > /dev/null
-echo -e ${cyan}"Root Partition created and mounted on $ROOT_PART"${reset}
+echo "ROOT PARTITION mounted on $ROOT_PART"
 
 # Create Home Partition mounted to /mnt/home
 read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
-mkfs.ext4 -f $HOME_PART
+mkfs.ext4 $HOME_PART
  mkdir -p /mnt/home
 mount $HOME_PART /mnt/home > /dev/null
-echo -e ${cyan}"Home Partition created and mounted on $HOME_PART"${reset}
-
 
 # Assign Computer Hostname to system
-#read -rp "Machine Hostname: " HOSTNAME
-#echo $HOSTNAME > hostname.txt
-
+read -rp "Machine Hostname: " HOSTNAME
+echo $HOSTNAME > hostname.txt
 
 echo
-echo -e ${yellow} "Install Drive: $INSTALL_DRIVE"${reset}
-echo -e ${yellow} "EFI Partiton: $EFI_PART"${reset}
-echo -e ${yellow} "SWAP Partition: $SWAP_PART"${reset}
-echo -e ${yellow} "Root Partition: $ROOT_PART"${reset}
-echo -e ${yellow} "Home Partition: $HOME_PART"${reset}
-#echo "Hostname: $HOSTNAME"
+echo "Install Drive: $INSTALL_DRIVE"
+echo "EFI Partiton: $EFI_PART"
+echo "SWAP Partition: $SWAP_PART"
+echo "Root Partition: $ROOT_PART"
+echo "Home Partition: $HOME_PART"
+echo "Hostname: $HOSTNAME"
 ;;
     [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";exit 1;;esac
 
@@ -142,61 +119,52 @@ function ARCH_ISO {
 # Initial ISO install.. manual intervention is required for this step as of now
 
 # Check if using EFI Mode
-echo -e ${yellow}'Checking if system is booted in EFI mode'${reset}
+echo 'Checking if system is booted in EFI mode'
 ls /sys/firmware/efi/efivars
 if [[ -e "/sys/firmware/efi/efivars" ]]; then
-echo -e ${cyan}"EFI MODE = YES"$Preset};else
-echo -e ${cyan}"EFI MODE = NO"${reset} && echo -e ${red}"Exiting script.. please check your settings"${reset}
+echo "EFI MODE = YES";else
+echo "EFI MODE = NO" && echo "Exiting script.. please check your settings"
 exit 1;fi
 
 # Check Internet Connection
 #ip link && read # add prompt
 echo 'Checking Internet Connection'
 ping -c 1 -q archlinux.org > /dev/null 2>&1
-if [[ $? = 0 ]]; then echo -e ${green}'Internet = Yes'${reset}; else echo -e ${red}'Internet = No'${reset};fi
+if [[ $? = 0 ]]; then echo 'Internet = Yes'; else echo 'Internet = No';fi
 		#ping -c 3 archlinux.org
 		#iplink # if UP okay if DOWN then exit script
-#MAKE WIFI MENU HERE
-
 		#wifi? #wifi-menu
-
 # Set Network Time Protocol
-echo -e ${yellow}'Setting Network Time Protocol'${reset}
+echo 'Setting Network Time Protocol'
 timedatectl set-ntp true
-
-
-# Assign Computer Hostname to system
-echo -e ${blue}'Please Choose the Machine Hostname'${reset}
-read -rp "Machine Hostname: " HOSTNAME
-echo $HOSTNAME > hostname.txt
 
 # Set Disk/Partitions
 DISKS_PARTITIONS
-echo -e ${green}
 read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY]) echo "Yes" > /dev/null ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
 # Install System
-echo -e ${red}'Installing base system'${reset}
+echo 'Installing base system'
 pacstrap /mnt base linux linux-firmware sudo nano curl
-echo -e ${green}'System Installed'${reset}
+echo 'System Installed'
 
 # Generate File System Table
-echo -e ${yellow}'Generating File System Table'${reset}
+echo 'Generating File System Table'
 genfstab -U -p /mnt > /mnt/etc/fstab
-echo -e ${green}"created /etc/fstab"${reset}
+#genfstab -U -p /mnt > /mnt/etc/fstab
+echo "created /etc/fstab"
 
 # Move files into /mnt so we can use them later
 mv arch-install.sh /mnt/
-echo -e ${magenta}"Install Script moved to /mnt"${reset}
+echo "Install Script moved to /mnt"
 # Moving lost user input variables so we can use them again
 mv efi.txt /mnt/
 mv hostname.txt /mnt/
 #mv swap.txt /mnt/
 
 # Chroot into system
-echo -e ${cyan}"Chrooting into system"${reset}
+echo "Chrooting into system"
 arch-chroot /mnt /bin/bash /arch-install.sh -a
 }
 
@@ -213,70 +181,69 @@ EFI_PART=$(cat efi.txt)
 HOSTNAME=$(cat hostname.txt)
 #Chrooting into /mnt stopped the script. so here we are with another function
 
-echo -e ${yellow}'Generating locales'${reset}
+echo 'Generating locales'
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
-echo -e ${green}'locales generated'${reset}
-echo -e ${yellow}'Setting Time Zone'${reset}
+echo 'locales generated'
+echo 'Setting Time Zone'
 ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
 hwclock --systohc --utc
-echo -e ${green}'Time Zone Configured'${reset}
+echo 'Time Zone Configured'
 
 # Set Hostname
-echo -e ${cyan}'Creating Hostname'${reset}
+echo 'Creating Hostname'
 echo $HOSTNAME > /etc/hostname
 echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
-echo -e ${green}"Hostname set as $USERHOSTNAME"${reset}
+echo "Hostname set as $USERHOSTNAME"
 
 # Update and Install NetworkManager, Grub and EfiBootMgr
-echo -e ${yellow}'Updating System'${reset}
+echo 'Updating System'
 pacman -Sy
-echo -e ${yellow}'Installing NetworkManager Grub and EfiBootMgr'${reset}
+echo 'Installing NetworkManager Grub and EfiBootMgr'
 pacman -S networkmanager grub efibootmgr --noconfirm
-echo -e ${green}'Packages have been installed.'${reset}
 systemctl enable NetworkManager
-echo -e ${green}'NetworkManager has been enabled'${reset}
+echo 'NetworkManager has been enabled'
 
 # Set Root Password
-echo;echo -e ${red}'set root password...'${reset}
+echo;echo 'set root password...'
 passwd
 
 # Create User
-echo -e ${cyan}'Creating User'${reset}
+echo 'Creating User'
 USERUSERNAME="arch-user"
 useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
-echo;echo -e ${red}'Set User Password'${reset}
+echo;echo 'Set User Password'
 passwd $USERUSERNAME
-echo -e ${green}'User Creation Complete'${reset}
+echo 'User Creation Complete'
   # Add user to wheel group for sudo privlidges
-  echo - e ${green}'Adding user to wheel group'${green}
+  echo 'Adding user to wheel group'
   echo "%wheel ALL=(ALL:ALL) ALL" | sudo EDITOR='tee -a' visudo
 
 # EFI
-echo -e ${cyan}'Creating EFI partition'${reset}
+echo 'Creating EFI partition'
 mkdir /boot/efi
 mount $EFI_PART /boot/efi
-echo -e ${green}'EFI partition created and mounted on /boot/efi'${reset}
+echo 'EFI partition created and mounted on /boot/efi'
+#lsblk # to check if everything is mounted correctly
 
 # Configure mkinitcpio again (worked without it on a VM but not on my 2nd laptop)
 mkinitcpio -P
 
 # Grub Bootloader
-echo -e $Pblue{'Installing grub'${reset}
-#grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
-grub-install && echo -e ${green}'Grub Installed'$Preset}
-echo -e ${yellow}'Generating Grub Config file'${reset}
+echo 'Installing grub'
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
+#grub-install
+echo 'Creating Grub Config file'
 grub-mkconfig -o /boot/grub/grub.cfg
-echo -e ${green}'Grub Config created'${reset}
+echo 'Grub Config created'
 
 
-# Moving arch-install.sh into new user home directory. Log in as user and run script
-	# add cron job here or something to boot script at next login
+# add cron job here or something to boot script at next login
 mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
 echo
-echo -e ${green}'You may now reboot your system'${reset}
-echo -e ${red}'Run this script again at next boot'${reset}
+echo 'You may now reboot your system'
+echo 'Run this script again at next boot'
 }
 
 #----------------------------------------------------
@@ -320,15 +287,12 @@ done
 			##################
 
 # Install git and build tools
-echo -e ${yellow}'Installing git and build tools for AUR'${reset}
 sudo pacman -S git autoconf make gcc perl fakeroot automake --noconfirm
 
 # Make folder named jeremy-venditto in the home folder
-echo -e ${yellow}'Creating folder ~/jeremy-venditto'${reset}
 mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
 
 # Clone repos
-echo -e ${cyan}'Cloning Git Repositories into ~/jeremy-venditto'${reset}
 git clone https://github.com/jeremy-venditto/bash-scripts
 git clone https://github.com/jeremy-venditto/dotfiles
 git clone https://github.com/jeremy-venditto/wallpaper
@@ -338,38 +302,23 @@ git clone https://github.com/jeremy-venditto/wallpaper
 			##################
 
 ## Enable Multilib repository
-echo -e ${yellow}'Enabling Multilib Repository'${reset}
 sudo sed -i '94s!#Include = /etc/pacman.d/mirrorlist!Include = /etc/pacman.d/mirrorlist!' /etc/pacman.conf
 sudo pacman -Syyu
-
 ## Get Fastest Mirrors
-echo -e ${cyan}'Setting mirrors to the fastest ones'${reset}
 sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
-
 ## Install Packages
-
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
-echo -e ${yellow}'Installing packages for all machine types'${reset}
 sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox --noconfirm
-
         #Install yay AUR helper
-echo -e ${yellow}'Installing yay AUR helper'${reset}
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si --noconfirm
-
         #Install machine specific packages
-if [[ $MACHINE = "DESKTOP" ]]; then
-echo -e ${yellow}'Installing Desktop Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt --noconfirm
+if [[ $MACHINE = "DESKTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt --noconfirm
 yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt --noconfirm;fi
-if [[ $MACHINE = "LAPTOP" ]]; then
-echo -e ${yellow}'Installing Laptop Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt --noconfirm
+if [[ $MACHINE = "LAPTOP" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt --noconfirm
 yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt --noconfirm;fi
-if [[ $MACHINE = "VIRTUAL" ]]; then
-echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt --noconfirm
+if [[ $MACHINE = "VIRTUAL" ]]; then sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt --noconfirm
 yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt --noconfirm;fi
 
 
@@ -379,32 +328,20 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt --noconfirm;fi
 
 # Move config files
     #files
-echo -e ${cyan}'Copying configuration files'${reset}
-
-echo -e ${yellow}'Updated ~/.bash_profile'${reset}
 mv ~/jeremy-venditto/dotfiles/.bash_profile /~
-echo -e ${yellow}'Updated ~/.bashrc'${reset}
 mv ~/jeremy-venditto/dotfiles/.bashrc ~/
-echo -e ${yellow}'Updated ~/.profile'${reset}
 mv ~/jeremy-venditto/dotfiles/.profile ~/
-echo -e ${yellow}'Updated ~/.xinitrc'${reset}
 mv ~/jeremy-venditto/dotfiles/.xinitrc ~/
-echo -e ${yellow}'Updated ~/.xprofile'${reset}
 mv ~/jeremy-venditto/dotfiles/.xprofile ~/
-echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
 sudo mv ~/jeremy-venditto/dotfiles/usr/share/pixmaps/* /usr/share/pixmaps/
     #directories
-echo -e ${yellow}'Updated ~/.config/'${reset}
 mv ~/jeremy-venditto/dotfiles/.config/ ~/
-echo -e ${yellow}'Updated ~/.local/'${reset}
 mv ~/jeremy-venditto/dotfiles/.local/ ~/
     #wallpaper directory? default is ~/
-echo -e ${yellow}'Wallpaper Directory added to ~/wallpaper/'${reset}
 mv ~/jeremy-venditto/wallpaper/ ~/
 
 ## Screen Resolution for virtual machines
 if [[ $MACHINE = VIRTUAL ]]; then
-echo -e ${yellow}'Added 2 screen resolution scripts to ~/'${reset}
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/screen-normal.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/screen-full.sh
 chmod +x ~/screen-normal.sh ~/screen-full.sh;fi
@@ -412,46 +349,34 @@ chmod +x ~/screen-normal.sh ~/screen-full.sh;fi
 		# Services
 
 # Enable UFW firewall
-echo -e ${cyan}'Enabling UFW Firewall'${reset}
 sudo ufw enable && sudo systemctl enable --now ufw
 
 # Enable LightDM
-echo -e ${cyan}'Enabling LightDM Display Manager'${reset}
 sudo systemctl enable lightdm
 
-
 # Change LightDM settings
-echo -e ${yellow}'LightDM Settings Have Been Updated.'${reset}
-if [[ $MACHINE = DESKTOP ]]; then
-sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
-if [[ $MACHINE = LAPTOP ]]; then
-sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
-if [[ $MACHINE = VIRTUAL ]]; then
-sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
+if [[ $MACHINE = DESKTOP ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
+if [[ $MACHINE = LAPTOP ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
+if [[ $MACHINE = VIRTUAL ]]; then sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
 # Change Nitrogen Settings
-echo -e ${yellow}'Nitrogen Settings Have Been Updated.'${reset}
-echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
-
 if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 # Change Grub Wallpaper
-echo -e ${yellow}'GRUB Settings Have Been Updated.'${reset}
 #sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
 #sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
 sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 
 # Enable nano syntax highlighting
-echo -e ${yellow}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
 ~/jeremy-venditto/bash-scripts/nano-syntax-highlighting.sh
 
 ### install dmenu
-cd ~/.config/dmenu && sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset}
-echo
-echo -e ${green}'Script Complete!'${reset}
+cd ~/.config/dmenu && sudo make install
+
+echo 'script complete'
 }
 
 
