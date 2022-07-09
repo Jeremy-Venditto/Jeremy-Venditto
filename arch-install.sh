@@ -64,7 +64,9 @@ EOF
 function DISKS_PARTITIONS {
 
 # View Disks before modifying
-echo -e ${yellow};lsblk;echo -e ${reset}
+lsblk
+#echo -e ${yellow};lsblk;
+#echo -e ${reset}
 
 # Select Installation Hard Disk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
@@ -173,7 +175,7 @@ echo $HOSTNAME > hostname.txt
 DISKS_PARTITIONS
 echo -e ${green}
 read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
-    [yY][eE][sS]|[yY]) echo "Yes" > /dev/null ;;
+    [yY][eE][sS]|[yY]) echo -e ${reset} "Yes" > /dev/null ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
 # Install System
