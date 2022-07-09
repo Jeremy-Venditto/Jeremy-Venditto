@@ -72,12 +72,21 @@ lsblk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
 #cfdisk $INSTALL_DRIVE
 
-read -r -p "Coninue with disk formatting? [Y/n] " input ; case $input in
+read -r -p "Edit Disk Partitions? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY])
 
 # Partition Drive (manual as of now)
 cfdisk $INSTALL_DRIVE # Make this automated
 
+# Add automated version here.. have it say yes to this prompt
+
+;;
+    [nN][oO]|[nN]) echo "No"      
+;; 
+*) echo "Invalid input...";exit 1;;esac
+
+
+lsblk
 
 
 # Create EFI Partition (not mounted)
@@ -126,9 +135,14 @@ echo -e ${yellow} "EFI Partiton: $EFI_PART"${reset}
 echo -e ${yellow} "SWAP Partition: $SWAP_PART"${reset}
 echo -e ${yellow} "Root Partition: $ROOT_PART"${reset}
 echo -e ${yellow} "Home Partition: $HOME_PART"${reset}
+
+lsblk
+
 #echo "Hostname: $HOSTNAME"
-;;
-    [nN][oO]|[nN]) echo "No"      ;; *) echo "Invalid input...";exit 1;;esac
+#;;
+#    [nN][oO]|[nN]) echo "No"      
+#;;
+#*) echo "Invalid input...";exit 1;;esac
 
 }
 
