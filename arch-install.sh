@@ -83,13 +83,13 @@ cfdisk $INSTALL_DRIVE # Make this automated
 # Create EFI Partition (not mounted)
 read -rp "EFI PARTITION: " -e -i /dev/ EFI_PART
 echo $EFI_PART > efi.txt # EFI_PART variable is lost after arch-chroot
-mkfs.fat -F32 -f $EFI_PART > /dev/null
+mkfs.fat -F32 $EFI_PART > /dev/null
 echo -e ${cyan}"EFI Partition created on $EFI_PART"${reset}
 mount --mkdir $EFI_PART /mnt/boot/efi
 
 # Create Swap Partition
 read -rp "SWAP PARTITION: " -e -i /dev/ SWAP_PART
-echo $SWAP_PART > swap.txt # SWAP_PART variable is lost after arch-chroot
+#echo $SWAP_PART > swap.txt # SWAP_PART variable is lost after arch-chroot
 mkswap $SWAP_PART && swapon $SWAP_PART
 if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo -e ${cyan}"SWAP space set up on $SWAP_PART"${reset};fi
         ## SWAPFILE
@@ -103,13 +103,13 @@ if [[ -z $SWAP_PART ]]; then echo "SWAP file set up on (edit me)"; else echo -e 
 
 # Create Root Partition mounted to /mnt
 read -rp "ROOT PARTITION: " -e -i /dev/ ROOT_PART
-mkfs.ext4 -f $ROOT_PART
+mkfs.ext4 $ROOT_PART
 mount $ROOT_PART /mnt > /dev/null
 echo -e ${cyan}"Root Partition created and mounted on $ROOT_PART"${reset}
 
 # Create Home Partition mounted to /mnt/home
 read -rp "HOME PARTITION: " -e -i /dev/ HOME_PART
-mkfs.ext4 -f $HOME_PART
+mkfs.ext4 $HOME_PART
  mkdir -p /mnt/home
 mount $HOME_PART /mnt/home > /dev/null
 echo -e ${cyan}"Home Partition created and mounted on $HOME_PART"${reset}
@@ -179,6 +179,7 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
 # Install System
+echo
 echo -e ${red}'Installing base system'${reset}
 pacstrap /mnt base linux linux-firmware sudo nano curl
 echo -e ${green}'System Installed'${reset}
@@ -251,7 +252,7 @@ echo;echo -e ${red}'Set User Password'${reset}
 passwd $USERUSERNAME
 echo -e ${green}'User Creation Complete'${reset}
   # Add user to wheel group for sudo privlidges
-  echo - e ${green}'Adding user to wheel group'${green}
+  echo -e ${green}'Adding user to wheel group'${green}
   echo "%wheel ALL=(ALL:ALL) ALL" | sudo EDITOR='tee -a' visudo
 
 # EFI
@@ -275,6 +276,7 @@ echo -e ${green}'Grub Config created'${reset}
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
 mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
+rm /hostname.txt && rm /efi.txt
 echo
 echo -e ${green}'You may now reboot your system'${reset}
 echo -e ${red}'Run this script again at next boot'${reset}
@@ -337,6 +339,10 @@ git clone https://github.com/jeremy-venditto/wallpaper
 			##################
 			#### PACKAGES ####
 			##################
+
+## Enable Parallel Downloads
+echo -e ${yellow}'Enabling Parallel Downloads'${reset}
+sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
 
 ## Enable Multilib repository
 echo -e ${yellow}'Enabling Multilib Repository'${reset}
