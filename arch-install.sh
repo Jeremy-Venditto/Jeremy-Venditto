@@ -384,18 +384,21 @@ git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si --noconfirm
 
         #Install machine specific packages
+
 if [[ $MACHINE = "DESKTOP" ]]; then
 echo -e ${yellow}'Installing Desktop Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_desktop.txt --noconfirm
-yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_desktop.txt --noconfirm;fi
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/desktop/Arch_PACMAN.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/desktop/Arch_AUR.txt --noconfirm;fi
+
 if [[ $MACHINE = "LAPTOP" ]]; then
 echo -e ${yellow}'Installing Laptop Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_laptop.txt --noconfirm
-yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_laptop.txt --noconfirm;fi
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_PACMAN.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_AUR.txt --noconfirm;fi
+
 if [[ $MACHINE = "VIRTUAL" ]]; then
 echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/pacman_vm.txt --noconfirm
-yay -S - < ~/jeremy-venditto/dotfiles/.resources/aur_vm.txt --noconfirm;fi
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/pacman_vm.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/aur_vm.txt --noconfirm;fi
 
 
 			###################
