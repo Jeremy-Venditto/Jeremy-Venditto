@@ -64,12 +64,11 @@ EOF
 function DISKS_PARTITIONS {
 
 # View Disks before modifying
-echo -e ${yellow};lsblk;echo -e ${reset}${blue}
+echo -e ${yellow};lsblk;echo -e ${reset}
 
 # Select Installation Hard Disk
 read -rp "INSTALL DRIVE: " -e -i /dev/ INSTALL_DRIVE
 #cfdisk $INSTALL_DRIVE
-echo -e ${reset}
 
 read -r -p "Coninue with disk formatting? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY])
