@@ -81,12 +81,8 @@ cfdisk $INSTALL_DRIVE # Make this automated
 # Add automated version here.. have it say yes to this prompt
 
 ;;
-    [nN][oO]|[nN]) echo "No"      
-;; 
-*) echo "Invalid input...";exit 1;;esac
+    [nN][oO]|[nN]) echo "No" > /dev/null ;; *) echo "Invalid input...";exit 1;;esac
 
-
-lsblk
 
 
 # Create EFI Partition (not mounted)
@@ -130,12 +126,12 @@ echo -e ${cyan}"Home Partition created and mounted on $HOME_PART"${reset}
 
 
 echo
-echo -e ${yellow} "Install Drive: $INSTALL_DRIVE"${reset}
-echo -e ${yellow} "EFI Partiton: $EFI_PART"${reset}
-echo -e ${yellow} "SWAP Partition: $SWAP_PART"${reset}
-echo -e ${yellow} "Root Partition: $ROOT_PART"${reset}
-echo -e ${yellow} "Home Partition: $HOME_PART"${reset}
-
+echo -e ${yellow}     "Install Drive: $INSTALL_DRIVE"${reset}
+echo -e ${yellow}     "EFI Partiton: $EFI_PART"${reset}
+echo -e ${yellow}     "SWAP Partition: $SWAP_PART"${reset}
+echo -e ${yellow}     "Root Partition: $ROOT_PART"${reset}
+echo -e ${yellow}     "Home Partition: $HOME_PART"${reset}
+echo
 lsblk
 
 #echo "Hostname: $HOSTNAME"
@@ -160,7 +156,7 @@ function ARCH_ISO {
 echo -e ${yellow}'Checking if system is booted in EFI mode'${reset}
 ls /sys/firmware/efi/efivars
 if [[ -e "/sys/firmware/efi/efivars" ]]; then
-echo -e ${cyan}"EFI MODE = YES"$Preset};else
+echo -e ${cyan}"EFI MODE = YES"${reset};else
 echo -e ${cyan}"EFI MODE = NO"${reset} && echo -e ${red}"Exiting script.. please check your settings"${reset}
 exit 1;fi
 
@@ -195,6 +191,7 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
 # Install System
 echo
 echo -e ${red}'Installing base system'${reset}
+echo
 pacstrap /mnt base linux linux-firmware sudo nano curl
 echo -e ${green}'System Installed'${reset}
 
@@ -255,20 +252,23 @@ systemctl enable NetworkManager
 echo -e ${green}'NetworkManager has been enabled'${reset}
 
 # Set Root Password
-echo;echo -e ${red}'set root password...'${reset}
+echo;echo -e ${red}'Set Root password...'${reset}
 passwd
+echo
 
 # Create User
-echo -e ${cyan}'Creating User'${reset}
-USERUSERNAME="arch-user"
+echo -e ${cyan}'Creating User'${reset}${yellow}
+read -rp "Username: " USERUSERNAME
+#USERUSERNAME="arch-user"
 useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
-echo;echo -e ${red}'Set User Password'${reset}
+echo -e ${red}'Set User Password'${reset}
 passwd $USERUSERNAME
 echo -e ${green}'User Creation Complete'${reset}
+echo
   # Add user to wheel group for sudo privlidges
-  echo -e ${green}'Adding user to wheel group'${green}
+  echo -e ${yellow}'Adding user to wheel group'${green}
   echo "%wheel ALL=(ALL:ALL) ALL" | sudo EDITOR='tee -a' visudo
-
+  echo
 # EFI
 echo -e ${cyan}'Creating EFI partition'${reset}
 mkdir /boot/efi
@@ -279,9 +279,10 @@ echo -e ${green}'EFI partition created and mounted on /boot/efi'${reset}
 mkinitcpio -P
 
 # Grub Bootloader
-echo -e $Pblue{'Installing grub'${reset}
+echo
+echo -e ${blue}'Installing grub'${reset}
 #grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
-grub-install && echo -e ${green}'Grub Installed'$Preset}
+grub-install && echo -e ${green}'Grub Installed'${reset}
 echo -e ${yellow}'Generating Grub Config file'${reset}
 grub-mkconfig -o /boot/grub/grub.cfg
 echo -e ${green}'Grub Config created'${reset}
@@ -293,7 +294,7 @@ mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch
 rm /hostname.txt && rm /efi.txt
 echo
 echo -e ${green}'You may now reboot your system'${reset}
-echo -e ${red}'Run this script again at next boot'${reset}
+echo -e ${cyan}'Run this script again at next boot'${cyan}
 }
 
 #----------------------------------------------------
@@ -337,10 +338,12 @@ done
 			##################
 
 # Install git and build tools
+echo
 echo -e ${yellow}'Installing git and build tools for AUR'${reset}
 sudo pacman -S git autoconf make gcc perl fakeroot automake --noconfirm
 
 # Make folder named jeremy-venditto in the home folder
+echo
 echo -e ${yellow}'Creating folder ~/jeremy-venditto'${reset}
 mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
 
@@ -375,6 +378,7 @@ echo -e ${yellow}'Installing packages for all machine types'${reset}
 sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox --noconfirm
 
         #Install yay AUR helper
+echo
 echo -e ${yellow}'Installing yay AUR helper'${reset}
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si --noconfirm
@@ -442,7 +446,7 @@ sudo systemctl enable lightdm
 
 
 # Change LightDM settings
-echo -e ${yellow}'LightDM Settings Have Been Updated.'${reset}
+echo -e ${magenta}'LightDM Settings Have Been Updated.'${reset}
 if [[ $MACHINE = DESKTOP ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = LAPTOP ]]; then
@@ -451,7 +455,7 @@ if [[ $MACHINE = VIRTUAL ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
 # Change Nitrogen Settings
-echo -e ${yellow}'Nitrogen Settings Have Been Updated.'${reset}
+echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
 echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
 
 if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
@@ -459,29 +463,29 @@ if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallp
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 # Change Grub Wallpaper
-echo -e ${yellow}'GRUB Settings Have Been Updated.'${reset}
+echo -e ${magenta}'GRUB Settings Have Been Updated.'${reset}
 #sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
 #sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
 sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 
 # Enable nano syntax highlighting
-echo -e ${yellow}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
+echo -e ${green}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
 ~/jeremy-venditto/bash-scripts/nano-syntax-highlighting.sh
 
-### install dmenu
-cd ~/.config/dmenu && sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset}
+### Install Dmenu
+echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
+sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} || echo -e ${red}'Dmenu Installation Failed.'${reset}
+
+## End of Script
 echo
 echo -e ${green}'Script Complete!'${reset}
 }
 
 
-
 						#~~~############~~~#
 						#~~ SCRIPT START ~~#
 						#~~~############~~~#
-
-
 
 # Flags
 while getopts ":a" option; do
@@ -493,32 +497,28 @@ esac
 done
 
 
+
 # AUTOMATED PROMPT
 AUTOMATED_ALL
 
+tput setaf 4
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
+tput set
 options=("Arch ISO Environment" "Userspace Shell" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
         "Arch ISO Environment")
+            tput setaf 0
             ARCH_ISO
             break
             ;;
         "Userspace Shell")
+            tput setaf 0
             USERSPACE_SHELL
             break
             ;;
-#        "Part 3")
-#            part_3
-#            break
-#            ;;
-#        "Part 4")
-#            part_4
-#            rm -rf ~/jeremy-venditto
-#            break
-#            ;;
         "Quit")
             break
             ;;
@@ -529,3 +529,4 @@ done
 #### TO DO #####
 # Make wallpaper directory switcher script
 # Enable sudo privlidges in tty
+# Fix Grub image settings
