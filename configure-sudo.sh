@@ -35,10 +35,10 @@ done
 GROUP=$GROUP_
         if id -nG "$USER" | grep -qw "$GROUP"; then
         echo -e "\e[32mUser '$USER' belongs already to the group '$GROUP'\e[0m"
-        else echo "$USER does not belong to $GROUP .. adding it now";cat >> $SRC/runasroot.sh<< EOF
+        else echo "$USER does not belong to $GROUP .. adding it now";cat >> runasroot.sh<< EOF
         sudo usermod -a -G sudo $USER || echo "please reboot system" || sleep 3 && systemctl reboot
 EOF
-dpkg -l | grep -qw sudo || echo "sudo is not configured, please enter your root password" && su -c $SRC/runasroot.sh
+dpkg -l | grep -qw sudo || echo "sudo is not configured, please enter your root password" && su -c runasroot.sh
         fi
 }
 configure_sudo

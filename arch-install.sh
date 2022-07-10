@@ -294,7 +294,7 @@ mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch
 rm /hostname.txt && rm /efi.txt
 echo
 echo -e ${green}'You may now reboot your system'${reset}
-echo -e ${cyan}'Run this script again at next boot'${cyan}
+echo -e ${cyan}'Run this script again at next boot'${reset}
 }
 
 #----------------------------------------------------
@@ -385,6 +385,9 @@ cd yay && makepkg -si --noconfirm
 
         #Install machine specific packages
 
+# Use this if you are following the arch wiki and backed your packges up.. My script pkg-backup.sh removes AUR packages
+#pacman -S --needed $(comm -12 <(pacman -Slq | sort) <(your-package-list.txt))
+
 if [[ $MACHINE = "DESKTOP" ]]; then
 echo -e ${yellow}'Installing Desktop Packages'${reset}
 sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/desktop/Arch_PACMAN.txt --noconfirm
@@ -410,22 +413,23 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/aur_vm.txt --noconfirm
 echo -e ${cyan}'Copying configuration files'${reset}
 
 echo -e ${yellow}'Updated ~/.bash_profile'${reset}
-mv ~/jeremy-venditto/dotfiles/.bash_profile /~
+cp ~/jeremy-venditto/dotfiles/.bash_profile ~/
 echo -e ${yellow}'Updated ~/.bashrc'${reset}
-mv ~/jeremy-venditto/dotfiles/.bashrc ~/
+cp ~/jeremy-venditto/dotfiles/.bashrc ~/
 echo -e ${yellow}'Updated ~/.profile'${reset}
-mv ~/jeremy-venditto/dotfiles/.profile ~/
+cp ~/jeremy-venditto/dotfiles/.profile ~/
 echo -e ${yellow}'Updated ~/.xinitrc'${reset}
-mv ~/jeremy-venditto/dotfiles/.xinitrc ~/
+cp ~/jeremy-venditto/dotfiles/.xinitrc ~/
 echo -e ${yellow}'Updated ~/.xprofile'${reset}
-mv ~/jeremy-venditto/dotfiles/.xprofile ~/
+cp ~/jeremy-venditto/dotfiles/.xprofile ~/
 echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
-sudo mv ~/jeremy-venditto/dotfiles/usr/share/pixmaps/* /usr/share/pixmaps/
+sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/* /usr/share/pixmaps/
     #directories
 echo -e ${yellow}'Updated ~/.config/'${reset}
-mv ~/jeremy-venditto/dotfiles/.config/ ~/
+mkdir -p ~/.config
+cp ~/jeremy-venditto/dotfiles/.config/* ~/.config
 echo -e ${yellow}'Updated ~/.local/'${reset}
-mv ~/jeremy-venditto/dotfiles/.local/ ~/
+cp -r ~/jeremy-venditto/dotfiles/.local/ ~/
     #wallpaper directory? default is ~/
 echo -e ${yellow}'Wallpaper Directory added to ~/wallpaper/'${reset}
 mv ~/jeremy-venditto/wallpaper/ ~/
@@ -447,6 +451,8 @@ sudo ufw enable && sudo systemctl enable --now ufw
 echo -e ${cyan}'Enabling LightDM Display Manager'${reset}
 sudo systemctl enable lightdm
 
+# Enable TLP for laptop battery)
+if [[ $MACHINE = LAPTOP ]]; then sudo systemctl enable tlp;fi
 
 # Change LightDM settings
 echo -e ${magenta}'LightDM Settings Have Been Updated.'${reset}
@@ -513,12 +519,10 @@ select opt in "${options[@]}"
 do
     case $opt in
         "Arch ISO Environment")
-            tput setaf 0
             ARCH_ISO
             break
             ;;
         "Userspace Shell")
-            tput setaf 0
             USERSPACE_SHELL
             break
             ;;
