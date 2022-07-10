@@ -510,10 +510,8 @@ done
 # AUTOMATED PROMPT
 AUTOMATED_ALL
 
-tput setaf 4
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
-tput set
 options=("Arch ISO Environment" "Userspace Shell" "Quit")
 select opt in "${options[@]}"
 do
