@@ -245,8 +245,8 @@ echo -e ${green}"Hostname set as $USERHOSTNAME"${reset}
 # Update and Install NetworkManager, Grub and EfiBootMgr
 echo -e ${yellow}'Updating System'${reset}
 pacman -Sy
-echo -e ${yellow}'Installing NetworkManager Grub and EfiBootMgr'${reset}
-pacman -S networkmanager grub efibootmgr --noconfirm
+echo -e ${yellow}'Installing NetworkManager Grub OS-Proberand EfiBootMgr'${reset}
+pacman -S networkmanager grub efibootmgr os-prober --noconfirm
 echo -e ${green}'Packages have been installed.'${reset}
 systemctl enable NetworkManager
 echo -e ${green}'NetworkManager has been enabled'${reset}
@@ -287,10 +287,19 @@ echo -e ${yellow}'Generating Grub Config file'${reset}
 grub-mkconfig -o /boot/grub/grub.cfg
 echo -e ${green}'Grub Config created'${reset}
 
+# Add Microcode for AMD and Intel Processors
+CPU_TYPE=$(lscpu | grep Vendor | cut -d : -f 2 | sed 's/ //g')
+if [[ $CPU_TYPE = GenuineIntel ]]; then 
+sudo pacman -S intel-ucode && echo -e ${magenta}'Installed Intel Microcode'${reset};fi
+if [[ $CPU_TYPE = AuthenticAMD ]]; then
+sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
+
+# Enable Grub to detect other operating systems
+sudo sed -o '63s!#GRUB_DISABLE_OS_PROBER="false"!GRUB_DISABLE_OS_PROBER="false"!' /etc/default/grub
 
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
-mv /arch-install.sh /home/$USERUSERNAME/ && chown arch-user /home/arch-user/arch-install.sh
+mv /arch-install.sh /home/$USERUSERNAME/ && chown $USERUSERNAME /home/$USERUSERNAME/arch-install.sh
 rm /hostname.txt && rm /efi.txt
 echo
 echo -e ${green}'You may now reboot your system'${reset}
@@ -337,6 +346,10 @@ done
 			### ESSENTIALS ###
 			##################
 
+## Enable Parallel Downloads
+echo -e ${yellow}'Enabling Parallel Downloads'${reset}
+sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
+
 # Install git and build tools
 echo
 echo -e ${yellow}'Installing git and build tools for AUR'${reset}
@@ -349,17 +362,26 @@ mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
 
 # Clone repos
 echo -e ${cyan}'Cloning Git Repositories into ~/jeremy-venditto'${reset}
+echo -e ${yellow}'Retrieving bash scripts'
 git clone https://github.com/jeremy-venditto/bash-scripts
+echo -e ${yellow}'Retrieving configuration files'
 git clone https://github.com/jeremy-venditto/dotfiles
+echo -e ${yellow}'Downloading wallpaper'
 git clone https://github.com/jeremy-venditto/wallpaper
+
+## to not download 800 wallpapers...
+# mkdir -p ~/jeremy-venditto/wallpaper/1920x1080
+# 
+# curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/1.jpg
+
 
 			##################
 			#### PACKAGES ####
 			##################
 
 ## Enable Parallel Downloads
-echo -e ${yellow}'Enabling Parallel Downloads'${reset}
-sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
+#echo -e ${yellow}'Enabling Parallel Downloads'${reset}
+#sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
 
 ## Enable Multilib repository
 echo -e ${yellow}'Enabling Multilib Repository'${reset}
