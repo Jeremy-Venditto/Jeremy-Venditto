@@ -427,7 +427,7 @@ sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/* /usr/share/pixmaps/
     #directories
 echo -e ${yellow}'Updated ~/.config/'${reset}
 mkdir -p ~/.config
-cp ~/jeremy-venditto/dotfiles/.config/* ~/.config
+cp -r ~/jeremy-venditto/dotfiles/.config/* ~/.config
 echo -e ${yellow}'Updated ~/.local/'${reset}
 cp -r ~/jeremy-venditto/dotfiles/.local/ ~/
     #wallpaper directory? default is ~/
