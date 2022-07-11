@@ -295,9 +295,7 @@ if [[ $CPU_TYPE = AuthenticAMD ]]; then
 sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
 
 # Enable Grub to detect other operating systems
-#sudo sed -i '63s!#GRUB_DISABLE_OS_PROBER="false"!GRUB_DISABLE_OS_PROBER="false"!' /etc/default/grub
-AAA=$(GRUB_DISABLE_OS_PROBER="false")
-echo "$AAA" | sudo EDITOR='tee -a' /etc/default/grub
+echo 'GRUB_DISABLE_OS_PROBER="false"' | sudo tee -a /etc/default/grub
 
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
