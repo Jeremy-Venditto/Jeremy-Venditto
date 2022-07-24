@@ -537,6 +537,12 @@ echo -e ${green}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
 echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
 sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} || echo -e ${red}'Dmenu Installation Failed.'${reset}
 
+### Install pasystray version 0.7.1-2 (later versions are black only)
+sudo cp ~/jeremy-venditto/dotfiles/.resources/packages/pasystray/* /var/cache/pacman/pkg
+sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst
+ # add pasystray to list of ignored upgrade
+echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
+
 ## End of Script
 echo
 echo -e ${green}'Script Complete!'${reset}
