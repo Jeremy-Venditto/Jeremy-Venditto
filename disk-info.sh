@@ -204,7 +204,7 @@ function HELP_FUNCTION {
 
 ################################# Flag options #################################
 # Get the options
-while getopts ":ghnsuvx" option; do
+while getopts ":ghoOnsuvx" option; do
    case $option in
       g) # globbed together with color
          COLOR
@@ -215,6 +215,13 @@ while getopts ":ghnsuvx" option; do
       n) # no color output globbed together
          NO_COLOR
          exit;;
+      o) # show only drives with mount points (color)
+         ./disk-info.sh -x | grep -B 1000 Optical | grep -v Optical | tac | sed '/Mount Point: none/I,+9 d' | tac
+         exit;;
+      O) # show only drives with mount points (no color)
+         ./disk-info.sh -x | grep -B 1000 Optical | grep -v Optical | tac | sed '/Mount Point: none/I,+9 d' | tac
+         exit;;
+
       s) # separate lines
          COLOR_SEPARATE_LINES
          exit;;

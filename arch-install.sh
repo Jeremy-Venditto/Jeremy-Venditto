@@ -11,6 +11,31 @@
 #https://jeremyvenditto.info
 
 # My Arch Linux Install
+
+#--------------------------------------------------------------------------------------------------#
+				#### HOW TO INSTALL ####
+				    # 2 part step
+
+#____ From Arch ISO environment
+
+# curl -O https://raw.githubusercontent.com/Jeremy-Venditto/bash-scripts/main/arch-install.sh
+# chmod +x arch-install.sh
+# ./arch-install.sh
+
+#system will reboot into a minimal user shell environment.. log in with new user..
+
+#____ From Userspace upon reboot
+
+# ./arch-install.sh
+# choose options
+
+# OR check out built in options with "./arch-install.sh -h"
+
+# reboot and enjoy your new system
+
+#--------------------------------------------------------------------------------------------------#
+
+
 #----------------------------------------------------
         #####################
         ### Define Colors ###
@@ -372,8 +397,12 @@ git clone https://github.com/jeremy-venditto/wallpaper
 ## to not download 800 wallpapers...
 # mkdir -p ~/jeremy-venditto/wallpaper/1920x1080
 # 
-# curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/1.jpg
+# curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/001.jpg
+# mv 001.jpg ~/jeremy-venditto/wallpaper/1920x1080
 
+
+# or
+# mv ~/jeremy-venditto/dotfiles/.resources/wallpaper/* ~/jeremy-venditto/wallpaper/1920x1080.jpg
 
 			##################
 			#### PACKAGES ####

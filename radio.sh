@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 
 #     __                         _   __            ___ __  __
 # __ / /__ _______ __ _  __ __  | | / /__ ___  ___/ (_) /_/ /____
@@ -35,7 +35,7 @@ cyan="\e[0;96m"
 bold="\e[1m"
 reset="\e[0m"
 # Find and kill rtl_fm process
-KILL_PROC () { pgrep rtl_fm >/dev/null && pkill rtl_fm >/dev/null 2>&1 || a='nothing';}
+KILL_PROC () { pgrep rtl_fm >/dev/null && pkill rtl_fm >/dev/null 2>&1 || echo='radio is off';}
 # Play Stations 1-10
 PLAY_STATION_1 () { rtl_fm -f ${STATION_1}e6 -M wbfm -s 200000 -r 48000 - | aplay -r 48000 -f S16_LE &}
 PLAY_STATION_2 () { rtl_fm -f ${STATION_2}e6 -M wbfm -s 200000 -r 48000 - | aplay -r 48000 -f S16_LE &}
@@ -76,7 +76,9 @@ done
 function MAIN {
 echo;echo -e ${bold}"FM Radio Stations"${reset}
 PS3='Please enter your choice: '
-options=("$STATION_1" "$STATION_2" "$STATION_3" "$STATION_4" "$STATION_5" "$STATION_6" "$STATION_7" "$STATION_8" "$STATION_9" "$STATION_10" "Turn Off Radio" "Quit")
+options=("$STATION_1" "$STATION_2" "$STATION_3" "$STATION_4" "$STATION_5" "$STATION_6"
+"$STATION_7" "$STATION_8" "$STATION_9" "$STATION_10" "Turn Off Radio" "Quit")
+echo 'X) Turn off radio     Q) Quit Program'
 select opt in "${options[@]}"
 do
     case $opt in
@@ -125,6 +127,10 @@ KILL_PROC
 break
 ;;
 "Quit")
+break
+;;
+"X")
+echo 'hi'
 break
 ;;
 *) echo "invalid option $REPLY";;
