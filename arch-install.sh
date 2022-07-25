@@ -426,7 +426,7 @@ sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg awesome xterm terminator exa ufw firefox --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox --noconfirm
 
         #Install yay AUR helper
 echo
@@ -446,8 +446,9 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/desktop/Arch_AUR.txt -
 
 if [[ $MACHINE = "LAPTOP" ]]; then
 echo -e ${yellow}'Installing Laptop Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_PACMAN.txt --noconfirm
-yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_AUR.txt --noconfirm;fi
+#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_PACMAN.txt --noconfirm
+#yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_AUR.txt --noconfirm;fi
+sudo pacman -S 
 
 if [[ $MACHINE = "VIRTUAL" ]]; then
 echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
