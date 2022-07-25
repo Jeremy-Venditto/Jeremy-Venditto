@@ -308,9 +308,9 @@ echo
 echo -e ${blue}'Installing grub'${reset}
 #grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
 grub-install && echo -e ${green}'Grub Installed'${reset}
-echo -e ${yellow}'Generating Grub Config file'${reset}
+echo -e ${yellow}'Generating Grub Configuration file'${reset}
 grub-mkconfig -o /boot/grub/grub.cfg
-echo -e ${green}'Grub Config created'${reset}
+echo -e ${green}'Grub Configuration created'${reset}
 
 # Add Microcode for AMD and Intel Processors
 CPU_TYPE=$(lscpu | grep Vendor | cut -d : -f 2 | sed 's/ //g')
@@ -320,7 +320,12 @@ if [[ $CPU_TYPE = AuthenticAMD ]]; then
 sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
 
 # Enable Grub to detect other operating systems
+echo -e ${magenta}'Enabling Grub to detect other Operating Systems'${reset}
 echo 'GRUB_DISABLE_OS_PROBER="false"' | sudo tee -a /etc/default/grub
+echo -e ${bold}'Regenerating Grub Configuration'${reset}
+grub-mkconfig -o /boot/grub/grub.cfg
+echo -e ${green}'Grub Configuration created'${reset}
+
 
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
@@ -387,11 +392,11 @@ mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
 
 # Clone repos
 echo -e ${cyan}'Cloning Git Repositories into ~/jeremy-venditto'${reset}
-echo -e ${yellow}'Retrieving bash scripts'
+echo -e ${yellow}'Retrieving bash scripts'${reset}
 git clone https://github.com/jeremy-venditto/bash-scripts
-echo -e ${yellow}'Retrieving configuration files'
+echo -e ${yellow}'Retrieving configuration files'${reset}
 git clone https://github.com/jeremy-venditto/dotfiles
-echo -e ${yellow}'Downloading wallpaper'
+echo -e ${yellow}'Downloading wallpaper'${reset}
 git clone https://github.com/jeremy-venditto/wallpaper
 
 ## to not download 800 wallpapers...
@@ -423,6 +428,9 @@ sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 
 ## Install Packages
 
+        #Update Archlinux Keyring to prevent errors on older ISOs
+sudo pacman -S archlinux-keyring --noconfirm
+
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
@@ -446,9 +454,8 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/desktop/Arch_AUR.txt -
 
 if [[ $MACHINE = "LAPTOP" ]]; then
 echo -e ${yellow}'Installing Laptop Packages'${reset}
-#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_PACMAN.txt --noconfirm
-#yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_AUR.txt --noconfirm;fi
-sudo pacman -S 
+sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_PACMAN.txt --noconfirm
+yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_AUR.txt --noconfirm;fi
 
 if [[ $MACHINE = "VIRTUAL" ]]; then
 echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
