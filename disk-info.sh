@@ -189,14 +189,18 @@ function HELP_FUNCTION {
    echo
    echo -e ${yellow}"                  \e[1mHelp Screen for disk-info.sh\e[0m"${reset}
    echo
-   echo "Syntax: [ |-h|-n|-v| ]"
+   echo "Syntax: [ |-g|-h|-O|-o|-n|-s|-u|-v|-x| ]"
    echo
    echo -e ${green}"Option:    Description:"${reset}
    echo
-   echo "-g  ~~~~~  Globbed together (with color)"
+   echo "-g  ~~~~~  Output Globbed together (with color)"
    echo "-h  ~~~~~  Print this Help."
-   echo "-n  ~~~~~  No color (separate lines)"
-   echo "-x  ~~~~~  No color (globbed together)"
+   echo "-n  ~~~~~  No color (globbed together)"
+   echo "-O  ~~~~~  Only show mounted drives (color)"
+   echo "-o  ~~~~~  Only show mounted drives (no color)"
+   echo "-s  ~~~~~  Output Separate Lines (with color)"
+   echo "-u  ~~~~~  Show UUID Drives only (no color)"
+   echo "-x  ~~~~~  Output Separate Lines (no color)"
    echo "-v  ~~~~~  Print software version and exit."
    echo
    echo -e ${cyan}"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"${reset}
@@ -232,7 +236,7 @@ while getopts ":ghoOnsuvx" option; do
          NO_COLOR_SEPARATE_LINES
          exit;;
       v) # version number
-        echo "0.31"
+        echo "0.3.2"
          exit;;
      \?) # Invalid option
          echo "Error: Invalid option"

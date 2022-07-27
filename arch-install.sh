@@ -151,11 +151,11 @@ echo -e ${cyan}"Home Partition created and mounted on $HOME_PART"${reset}
 
 
 echo
-echo -e ${yellow}     "Install Drive: $INSTALL_DRIVE"${reset}
-echo -e ${yellow}     "EFI Partiton: $EFI_PART"${reset}
-echo -e ${yellow}     "SWAP Partition: $SWAP_PART"${reset}
-echo -e ${yellow}     "Root Partition: $ROOT_PART"${reset}
-echo -e ${yellow}     "Home Partition: $HOME_PART"${reset}
+echo -e ${yellow}"     Install Drive: $INSTALL_DRIVE"${reset}
+echo -e ${yellow}"     EFI Partiton: $EFI_PART"${reset}
+echo -e ${yellow}"     SWAP Partition: $SWAP_PART"${reset}
+echo -e ${yellow}"     Root Partition: $ROOT_PART"${reset}
+echo -e ${yellow}"     Home Partition: $HOME_PART"${reset}
 echo
 lsblk
 
@@ -179,7 +179,7 @@ function ARCH_ISO {
 
 # Check if using EFI Mode
 echo -e ${yellow}'Checking if system is booted in EFI mode'${reset}
-ls /sys/firmware/efi/efivars
+#ls /sys/firmware/efi/efivars
 if [[ -e "/sys/firmware/efi/efivars" ]]; then
 echo -e ${cyan}"EFI MODE = YES"${reset};else
 echo -e ${cyan}"EFI MODE = NO"${reset} && echo -e ${red}"Exiting script.. please check your settings"${reset}
@@ -202,6 +202,7 @@ timedatectl set-ntp true
 
 
 # Assign Computer Hostname to system
+sleep 2 # stupid arch iso finishes loading during this point and you cant see this prompt
 echo -e ${blue}'Please Choose the Machine Hostname'${reset}
 read -rp "Machine Hostname: " HOSTNAME
 echo $HOSTNAME > hostname.txt
@@ -365,6 +366,10 @@ do
 #           if [[ $AUTOMATED=YES ]];then AUTOMATED_VM;fi
             break
             ;;
+        "Base Install")
+            MACHINE="BASE-INSTALL"
+            break
+            ;;
         "Quit")
             break
             ;;
@@ -459,9 +464,13 @@ yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/laptop/Arch_AUR.txt --
 
 if [[ $MACHINE = "VIRTUAL" ]]; then
 echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
-sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/pacman_vm.txt --noconfirm
-yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/aur_vm.txt --noconfirm;fi
+#sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/pacman_vm.txt --noconfirm
+#yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/aur_vm.txt --noconfirm;fi
 
+if [[ $MACHINE = "BASE-INSTALL" ]]; then
+echo -e ${yellow}'Installing Bare Minumum Packages'${reset}
+#sudo pacman -S 
+fi
 
 			###################
 			### EDIT CONFIG ###
@@ -475,6 +484,8 @@ echo -e ${yellow}'Updated ~/.bash_profile'${reset}
 cp ~/jeremy-venditto/dotfiles/.bash_profile ~/
 echo -e ${yellow}'Updated ~/.bashrc'${reset}
 cp ~/jeremy-venditto/dotfiles/.bashrc ~/
+echo -e ${yellow}'Updated ~/.gtkrc-2.0'${reset}
+cp ~/jeremy-venditto/dotfiles/.gtkrc-2.0 ~/
 echo -e ${yellow}'Updated ~/.profile'${reset}
 cp ~/jeremy-venditto/dotfiles/.profile ~/
 echo -e ${yellow}'Updated ~/.xinitrc'${reset}
@@ -540,6 +551,17 @@ sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /
 # Enable nano syntax highlighting
 echo -e ${green}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
 ~/jeremy-venditto/bash-scripts/nano-syntax-highlighting.sh
+
+# Enabling Dark mode on QT5 and GTK applications
+~/jeremy-venditto/bash-scripts/change-theme-gtk-qt.sh -d
+
+# Enable Firefox Config (dark, with extensions and private browsing)
+cp -r ~/github/dotfiles/.config/firefox/firefox-dark ~/.mozilla
+
+# Copy Xterm configuration
+echo -e ${green}'Xterm configuration copied to ~/.Xresources'${reset}
+cp ~/jeremyvenditto/dotfiles/.config/xterm/Xresources-dark ~/.Xresources
+xrdb ~/.Xresources
 
 ### Install Dmenu
 echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
