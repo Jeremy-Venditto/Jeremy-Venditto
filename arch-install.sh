@@ -464,7 +464,7 @@ if [[ $MACHINE = "VIRTUAL" ]]; then
 echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/pacman_vm.txt --noconfirm
 #yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/aur_vm.txt --noconfirm;fi
-
+fi
 if [[ $MACHINE = "BASE-INSTALL" ]]; then
 echo -e ${yellow}'Installing Bare Minumum Packages'${reset}
 #sudo pacman -S 
