@@ -214,6 +214,10 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY]) echo -e ${reset} "Yes" > /dev/null ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
+# Update iso (old iso pgp signature issues)
+pacman -Sy
+pacman -S archlinux-keyring
+
 # Install System
 echo
 echo -e ${red}'Installing base system'${reset}
@@ -620,3 +624,4 @@ done
 # Make wallpaper directory switcher script
 # Enable sudo privlidges in tty
 # Fix Grub image settings
+# add pacman color.. fix ignore pasystray
