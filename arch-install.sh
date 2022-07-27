@@ -418,10 +418,6 @@ git clone https://github.com/jeremy-venditto/wallpaper
 			#### PACKAGES ####
 			##################
 
-## Enable Parallel Downloads
-#echo -e ${yellow}'Enabling Parallel Downloads'${reset}
-#sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
-
 ## Enable Multilib repository
 echo -e ${yellow}'Enabling Multilib Repository'${reset}
 sudo sed -i '94s!#Include = /etc/pacman.d/mirrorlist!Include = /etc/pacman.d/mirrorlist!' /etc/pacman.conf
@@ -430,6 +426,8 @@ sudo pacman -Syyu
 ## Get Fastest Mirrors
 echo -e ${cyan}'Setting mirrors to the fastest ones'${reset}
 sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
+
+
 
 ## Install Packages
 
