@@ -326,7 +326,7 @@ sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};
 
 # Enable Grub to detect other operating systems
 echo -e ${magenta}'Enabling Grub to detect other Operating Systems'${reset}
-echo 'GRUB_DISABLE_OS_PROBER="false"' | sudo tee -a /etc/default/grub
+echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a /etc/default/grub
 echo -e ${bold}'Regenerating Grub Configuration'${reset}
 grub-mkconfig -o /boot/grub/grub.cfg
 echo -e ${green}'Grub Configuration created'${reset}
@@ -385,9 +385,11 @@ done
 			### ESSENTIALS ###
 			##################
 
-## Enable Parallel Downloads
+## EnablevParallel Downloads and Color for Pacman
 echo -e ${yellow}'Enabling Parallel Downloads'${reset}
 sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
+echo -e ${yellow}'Enabling Color for Pacman'${reset}
+sudo sed -i "/#Color/c\Color" ~/etc/pacman.conf
 
 # Install git and build tools
 echo
@@ -544,11 +546,13 @@ if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallp
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 # Change Grub Wallpaper
-echo -e ${magenta}'GRUB Settings Have Been Updated.'${reset}
+echo -e ${magenta}'Updating GRUB Settings...'${reset}
 #sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
 #sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
 sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+echo -e ${magenta}'GRUB Settings Have Been Updated.'${reset}
 
 # Enable nano syntax highlighting
 echo -e ${green}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
@@ -573,8 +577,8 @@ sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} || ech
 sudo cp ~/jeremy-venditto/dotfiles/.resources/packages/pasystray/* /var/cache/pacman/pkg
 sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst
  # add pasystray to list of ignored upgrade
-echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
-
+#echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
+sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
 ## End of Script
 echo
 echo -e ${green}'Script Complete!'${reset}
