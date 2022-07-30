@@ -624,11 +624,13 @@ else echo 'Wireshark is not installed';fi
 # Adwaita
 sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar -C /usr/share/themes
 # Adwaita-Dark
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/175933-AdwaitaDark.tar.gz -C /usr/share/themes
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/148170-Adwaita-Dark.tar -C /usr/share/themes
 # Kanada Icons
 sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/KanadaIcons.tar.gz -C /usr/share/icons
 # Kanada Cursors
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.gz /usr/share/icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.gz -C /usr/share/icons
+# Obsidian Red Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Obsidian-Red.tar.gz -C /usr/share/icons
 }
 
 
