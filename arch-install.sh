@@ -211,10 +211,12 @@ echo $HOSTNAME > hostname.txt
 DISKS_PARTITIONS
 echo -e ${green}
 read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
+# I dont think the echo -e reset below does anything.. next output was green'
     [yY][eE][sS]|[yY]) echo -e ${reset} "Yes" > /dev/null ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
 # Update iso (old iso pgp signature issues)
+echo -e ${red}'Updating Archlinux Keyring on Arch ISO'${reset}
 pacman -Sy
 pacman -S archlinux-keyring
 
@@ -243,9 +245,9 @@ echo -e ${cyan}"Chrooting into system"${reset}
 arch-chroot /mnt /bin/bash /arch-install.sh -a
 }
 
-        #############################################
-        ### Arch ISO enviroment after arch-chroot ###
-        #############################################
+        #############################################  ###################################
+        ### Arch ISO enviroment after arch-chroot ###  ## (ARCH ISO ENVIRONMENT PART 2) ##
+        #############################################  ###################################
 
 # Chrooting into /mnt stopped the script, so I needed another function
 
@@ -374,6 +376,8 @@ do
             ;;
         "Base Install")
             MACHINE="BASE-INSTALL"
+# if machine does not equal base install dont do script.. (probably not)
+# reorder configuration and make a function of base_install (probably this one)
             break
             ;;
         "Quit")
@@ -387,7 +391,7 @@ done
 			### ESSENTIALS ###
 			##################
 
-## EnablevParallel Downloads and Color for Pacman
+## Enable Parallel Downloads and Color for Pacman
 echo -e ${yellow}'Enabling Parallel Downloads'${reset}
 sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
 echo -e ${yellow}'Enabling Color for Pacman'${reset}
@@ -410,17 +414,26 @@ git clone https://github.com/jeremy-venditto/bash-scripts
 echo -e ${yellow}'Retrieving configuration files'${reset}
 git clone https://github.com/jeremy-venditto/dotfiles
 echo -e ${yellow}'Downloading wallpaper'${reset}
-git clone https://github.com/jeremy-venditto/wallpaper
+ # 800 wallpapers...
+#git clone https://github.com/jeremy-venditto/wallpaper
+ 
+# to not download 800 wallpapers...
+mkdir -p ~/jeremy-venditto/wallpaper/1920x1080 
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/001.jpg
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/002.jpg
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/003.jpg
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/004.jpg
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/005.jpg
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/006.jpg
+curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/007.jpg
+mv 001.jpg ~/jeremy-venditto/wallpaper/1920x1080
+mv 002.jpg ~/jeremy-venditto/wallpaper/1920x1080
+mv 003.jpg ~/jeremy-venditto/wallpaper/1920x1080
+mv 004.jpg ~/jeremy-venditto/wallpaper/1920x1080
+mv 005.jpg ~/jeremy-venditto/wallpaper/1920x1080
+mv 006.jpg ~/jeremy-venditto/wallpaper/1920x1080
+mv 007.jpg ~/jeremy-venditto/wallpaper/1920x1080
 
-## to not download 800 wallpapers...
-# mkdir -p ~/jeremy-venditto/wallpaper/1920x1080
-# 
-# curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/001.jpg
-# mv 001.jpg ~/jeremy-venditto/wallpaper/1920x1080
-
-
-# or
-# mv ~/jeremy-venditto/dotfiles/.resources/wallpaper/* ~/jeremy-venditto/wallpaper/1920x1080.jpg
 
 			##################
 			#### PACKAGES ####
@@ -435,17 +448,17 @@ sudo pacman -Syyu
 echo -e ${cyan}'Setting mirrors to the fastest ones'${reset}
 sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 
-
-
 ## Install Packages
 
         #Update Archlinux Keyring to prevent errors on older ISOs
+echo -e ${red}'Updating Archlinux Keyring on System'${reset}
 sudo pacman -S archlinux-keyring --noconfirm
 
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen
+#--noconfirm
 
         #Install yay AUR helper
 echo
@@ -568,8 +581,9 @@ cp -r ~/github/dotfiles/.config/firefox/firefox-dark ~/.mozilla
 
 # Copy Xterm configuration
 echo -e ${green}'Xterm configuration copied to ~/.Xresources'${reset}
-cp ~/jeremyvenditto/dotfiles/.config/xterm/Xresources-dark ~/.Xresources
-xrdb ~/.Xresources
+#cp ~/jeremyvenditto/dotfiles/.config/xterm/Xresources-dark ~/.Xresources
+cp ~/.config/xterm/Xresources-dark ~/.Xresources
+#xrdb ~/.Xresources
 
 ### Install Dmenu
 echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
@@ -581,56 +595,81 @@ sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst
  # add pasystray to list of ignored upgrade
 #echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
 sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
-## End of Script
-echo
-echo -e ${green}'Script Complete!'${reset}
 
-# Add user to groups
+############################
+#### Add user to groups ####
+############################
 
   # All Systems
 sudo usermod -aG video $USER
 
   # System Specific
+checkvirtmanager=$(which virt-manager) > /dev/null 2>&1
+if [[ $checkvirtmanager = /usr/bin/virt-manager ]]; then sudo usermod -aG libvirt $USER;fi
 
-checkvirtmanager=$(which virt-manager)
-if [[ $checkvirtmanager = /usr/bin/virt-manager ]]; then
-sudo usermod -aG libvirt $USER
-else echo 'virt-manager is not installed';fi
+checkvirtualbox=$(which virtualbox) > /dev/null 2>&1
+if [[ $checkvirtualbox = /usr/bin/virtualbox ]]; then sudo usermod -aG vboxusers $USER;fi
 
-checkvirtualbox=$(which virtualbox)
-if [[ $checkvirtualbox = /usr/bin/virtualbox ]]; then
-sudo usermod -aG vboxusers $USER
-else echo 'virtualbox is not installed';fi
+checkdocker=$(which docker) > /dev/null 2>&1
+if [[ $checkdocker = /usr/bin/docker ]]; then sudo usermod -aG libvirt video vboxusers docker $USER;fi
 
-checkdocker=$(which docker)
-if [[ $checkdocker = /usr/bin/docker ]]; then
-sudo usermod -aG libvirt video vboxusers docker $USER
-else echo 'Docker is not installed';fi
+########################################################################
+#### Add setcap capabilities so we do not have to run these as root ####
+########################################################################
 
-# Add setcap capabilities so we do not have to run these as root
    #Nethogs
-checknethogs=$(which nethogs)
-if [[ $checknethogs = /usr/bin/nethogs ]]; then
-setcap cap_net_admin,cap_net_raw+ep /usr/bin/nethogs
-else echo 'Nethogs is not installed';fi
+checknethogs=$(which nethogs) > /dev/null 2>&1
+if [[ $checknethogs = /usr/bin/nethogs ]]; then setcap cap_net_admin,cap_net_raw+ep /usr/bin/nethogs;fi
 
    #Wireshark
-checkwireshark=$(which wireshark)
-if [[ $checkwireshark = /usr/bin/wireshark ]]; then
-setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap
-else echo 'Wireshark is not installed';fi
+checkwireshark=$(which wireshark) > /dev/null 2>&1
+if [[ $checkwireshark = /usr/bin/wireshark ]]; then setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap;fi
 
-# Configure Cursors, Icons and Themes (GTK-2/3 and QT5)
+###############################################################
+#### Configure Cursors, Icons and Themes (GTK-2/3 and QT5) ####
+###############################################################
+
 # Adwaita
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar -C /usr/share/themes
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar.gz -C /usr/share/themes
+echo -e ${yellow}'Adwaita Theme added'${reset}
 # Adwaita-Dark
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/148170-Adwaita-Dark.tar -C /usr/share/themes
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/148170-Adwaita-Dark.tar.gz -C /usr/share/themes
+echo -e ${yellow}'Adwaita-Dark Theme added'${reset}
 # Kanada Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/KanadaIcons.tar.gz -C /usr/share/icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/KanadaIcons.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Kanada Icons added'${reset}
 # Kanada Cursors
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.gz -C /usr/share/icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Kanada Cursors added'${reset}
 # Obsidian Red Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Obsidian-Red.tar.gz -C /usr/share/icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Obsidian-Red.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Obsidian Red Icons added'${reset}
+# Candy Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/candy-icons.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Candy Icons added'${reset}
+# Infinity Dark Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Infinity-Dark-Icons.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Infinity Dark Icons added'${reset}
+# Infinity Light Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Infinity-Light-Icons.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Infinity Light Icons added'${reset}
+# Red Dot Black Dark Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Red-Dot-Black-Dark-Icons.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Red Dot Black Icons added'${reset}
+# Shiny Dark Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Shiny-Dark-Icons.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Shiny Dark Icons added'${reset}
+# Sweet Dark Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-Dark-v40.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Sweet Dark Icons added'${reset}
+# Sweet Mars Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-mars.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Sweet Mars icons added'${reset}
+
+
+## End of Script
+echo
+echo -e ${green}'Script Complete!'${reset}
 }
 
 

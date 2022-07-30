@@ -48,7 +48,7 @@ mv qt5ct.conf_light ~/.config/qt5ct/
 fi
 
 GTK_CURRENT_THEME=$(cat ~/.gtkrc-2.0 | grep gtk-theme-name | cut -d '"' -f2)
-if [[ $GTK_CURRENT_THEME = Adwaita-dark ]]; then GTK_THEME=DARK;fi
+if [[ $GTK_CURRENT_THEME = Adwaita-Dark ]]; then GTK_THEME=DARK;fi
 if [[ $GTK_CURRENT_THEME = Adwaita ]]; then GTK_THEME=LIGHT;fi
 if [[ $GTK_THEME = DARK ]]; then
 cp ~/github/dotfiles/.gtkrc-2.0_light ~/.gtkrc-2.0 &&
@@ -69,8 +69,8 @@ fi
 
 function Xterm {
 XTERM_THEME=$(cat .Xresources | grep foreground | cut -d ':' -f2 | cut -d ' ' -f2)
-if [[ $XTERM_THEME = black ]]; then cp ~/.config/xterm/.Xreources-light ~/.Xresources;fi
-if [[ $XTERM_THEME = white ]]; then cp ~/.config/xterm/.Xreources-dark ~/.Xresources;fi
+if [[ $XTERM_THEME = black ]]; then cp ~/.config/xterm/Xreources-light ~/.Xresources;fi
+if [[ $XTERM_THEME = white ]]; then cp ~/.config/xterm/Xreources-dark ~/.Xresources;fi
 xrdb ~/.Xresources
 }
 
