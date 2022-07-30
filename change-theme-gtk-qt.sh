@@ -19,6 +19,21 @@
 
 function Main {
 
+if [[ -e "$HOME/.config/gtk-2.0/gtkrc-2.0_light" ]]; then
+  echo "file exists" > /dev/null;else
+echo "~/.config/gtk-2.0/gtkrc-2.0_light does not exist, downloading file"
+curl -O https://raw.githubusercontent.com/jeremy-venditto/dotfiles/main/.config/gtk-2.0/gtkrc-2.0_light
+mv gtkrc-2.0_light ~/.config/gtkrc-2.0/
+fi
+
+if [[ -e "$HOME/.config/gtk-2.0/gtkrc-2.0_dark" ]]; then
+  echo "file exists" > /dev/null;else
+echo "~/.config/gtk-2.0/gtkrc-2.0_dark does not exist, downloading file"
+curl -O https://raw.githubusercontent.com/jeremy-venditto/dotfiles/main/.config/gtk-2.0/gtkrc-2.0_dark
+mv gtkrc-2.0_dark ~/.config/gtk-2.0/
+fi
+
+
 if [[ -e "$HOME/.config/gtk-3.0/settings.ini_dark" ]]; then
   echo "file exists" > /dev/null;else
 echo "~/.config/gtk-3.0/settings.ini_dark does not exist, downloading file"
@@ -51,19 +66,19 @@ GTK_CURRENT_THEME=$(cat ~/.gtkrc-2.0 | grep gtk-theme-name | cut -d '"' -f2)
 if [[ $GTK_CURRENT_THEME = Adwaita-Dark ]]; then GTK_THEME=DARK;fi
 if [[ $GTK_CURRENT_THEME = Adwaita ]]; then GTK_THEME=LIGHT;fi
 if [[ $GTK_THEME = DARK ]]; then
-cp ~/github/dotfiles/.gtkrc-2.0_light ~/.gtkrc-2.0 &&
-cp ~/github/dotfiles/.config/gtk-3.0/settings.ini_light ~/.config/gtk-3.0/settings.ini && echo 'GTK Theme is now set to Light'
+cp ~/.config/gtk-2.0/gtkrc-2.0_light ~/.gtkrc-2.0 &&
+cp ~/.config/gtk-3.0/settings.ini_light ~/.config/gtk-3.0/settings.ini && echo 'GTK Theme is now set to Light'
 fi
 if [[ $GTK_THEME = LIGHT ]]; then
-cp ~/github/dotfiles/.gtkrc-2.0_dark ~/.gtkrc-2.0 &&
-cp ~/github/dotfiles/.config/gtk-3.0/settings.ini_dark ~/.config/gtk-3.0/settings.ini && echo 'GTK Theme is now set to Dark'
+cp ~/.config/gtk-2.0/gtkrc-2.0_dark ~/.gtkrc-2.0 &&
+cp ~/.config/gtk-3.0/settings.ini_dark ~/.config/gtk-3.0/settings.ini && echo 'GTK Theme is now set to Dark'
 fi
 QT5_CURRENT_THEME=$(cat ~/.config/qt5ct/qt5ct.conf | grep color_scheme | cut -d '/' -f6)
 if [[ $QT5_CURRENT_THEME = darker.conf ]]; then
-cp ~/github/dotfiles/.config/qt5ct/qt5ct.conf_light ~/.config/qt5ct/qt5ct.conf && echo 'QT5 Theme is now set to Light'
+cp ~/.config/qt5ct/qt5ct.conf_light ~/.config/qt5ct/qt5ct.conf && echo 'QT5 Theme is now set to Light'
 fi
 if [[ $QT5_CURRENT_THEME = simple.conf ]]; then
-cp ~/github/dotfiles/.config/qt5ct/qt5ct.conf_dark ~/.config/qt5ct/qt5ct.conf && echo 'QT5 Theme is now set to Dark'
+cp ~/.config/qt5ct/qt5ct.conf_dark ~/.config/qt5ct/qt5ct.conf && echo 'QT5 Theme is now set to Dark'
 fi
 }
 

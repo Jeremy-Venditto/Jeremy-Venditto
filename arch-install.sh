@@ -216,7 +216,7 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
 # Update iso (old iso pgp signature issues)
-echo -e ${red}'Updating Archlinux Keyring on Arch ISO'${reset}
+echo;echo -e ${red}'Updating Archlinux Keyring on Arch ISO'${reset};echo
 pacman -Sy
 pacman -S archlinux-keyring
 
@@ -392,9 +392,9 @@ done
 			##################
 
 ## Enable Parallel Downloads and Color for Pacman
-echo -e ${yellow}'Enabling Parallel Downloads'${reset}
 sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
-echo -e ${yellow}'Enabling Color for Pacman'${reset}
+echo;echo -e ${yellow}'Enabling Parallel Downloads'${reset}
+echo;echo -e ${yellow}'Enabling Color for Pacman'${reset}
 sudo sed -i "/#Color/c\Color" /etc/pacman.conf
 
 # Install git and build tools
@@ -403,17 +403,16 @@ echo -e ${yellow}'Installing git and build tools for AUR'${reset}
 sudo pacman -S git autoconf make gcc perl fakeroot automake --noconfirm
 
 # Make folder named jeremy-venditto in the home folder
-echo
-echo -e ${yellow}'Creating folder ~/jeremy-venditto'${reset}
+echo;echo;echo -e ${yellow}'Creating folder ~/jeremy-venditto'${reset}
 mkdir -p ~/jeremy-venditto && cd ~/jeremy-venditto
 
 # Clone repos
-echo -e ${cyan}'Cloning Git Repositories into ~/jeremy-venditto'${reset}
-echo -e ${yellow}'Retrieving bash scripts'${reset}
+echo;echo -e ${cyan}'Cloning Git Repositories into ~/jeremy-venditto'${reset}
+echo;echo -e ${yellow}'Retrieving bash scripts'${reset}
 git clone https://github.com/jeremy-venditto/bash-scripts
-echo -e ${yellow}'Retrieving configuration files'${reset}
+echo;echo -e ${yellow}'Retrieving configuration files'${reset}
 git clone https://github.com/jeremy-venditto/dotfiles
-echo -e ${yellow}'Downloading wallpaper'${reset}
+echo;echo -e ${yellow}'Downloading wallpaper'${reset}
  # 800 wallpapers...
 #git clone https://github.com/jeremy-venditto/wallpaper
  
@@ -440,25 +439,24 @@ mv 007.jpg ~/jeremy-venditto/wallpaper/1920x1080
 			##################
 
 ## Enable Multilib repository
-echo -e ${yellow}'Enabling Multilib Repository'${reset}
+echo;echo -e ${yellow}'Enabling Multilib Repository'${reset}
 sudo sed -i '94s!#Include = /etc/pacman.d/mirrorlist!Include = /etc/pacman.d/mirrorlist!' /etc/pacman.conf
 sudo pacman -Syyu
 
 ## Get Fastest Mirrors
-echo -e ${cyan}'Setting mirrors to the fastest ones'${reset}
+echo;echo -e ${cyan}'Setting mirrors to the fastest ones (this will take a while)'${reset}
 sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 
 ## Install Packages
 
         #Update Archlinux Keyring to prevent errors on older ISOs
-echo -e ${red}'Updating Archlinux Keyring on System'${reset}
+echo;echo -e ${red}'Updating Archlinux Keyring on System'${reset}
 sudo pacman -S archlinux-keyring --noconfirm
 
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen
-#--noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio --noconfirm
 
         #Install yay AUR helper
 echo
@@ -519,9 +517,19 @@ mkdir -p ~/.config
 cp -r ~/jeremy-venditto/dotfiles/.config/* ~/.config
 echo -e ${yellow}'Updated ~/.local/'${reset}
 cp -r ~/jeremy-venditto/dotfiles/.local/ ~/
+
     #wallpaper directory? default is ~/
 echo -e ${yellow}'Wallpaper Directory added to ~/wallpaper/'${reset}
-mv ~/jeremy-venditto/wallpaper/ ~/
+mv ~/jeremy-venditto/wallpaper/ ~/ > /dev/null 2<&1
+
+# Change Nitrogen Settings
+echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
+echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
+
+if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+
 
 ## Screen Resolution for virtual machines
 if [[ $MACHINE = VIRTUAL ]]; then
@@ -553,12 +561,12 @@ if [[ $MACHINE = VIRTUAL ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
 # Change Nitrogen Settings
-echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
-echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
+#echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
+#echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
 
-if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+#if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+#if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+#if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
 # Change Grub Wallpaper
 echo -e ${magenta}'Updating GRUB Settings...'${reset}
@@ -583,7 +591,7 @@ cp -r ~/github/dotfiles/.config/firefox/firefox-dark ~/.mozilla
 echo -e ${green}'Xterm configuration copied to ~/.Xresources'${reset}
 #cp ~/jeremyvenditto/dotfiles/.config/xterm/Xresources-dark ~/.Xresources
 cp ~/.config/xterm/Xresources-dark ~/.Xresources
-#xrdb ~/.Xresources
+xrdb ~/.Xresources
 
 ### Install Dmenu
 echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
@@ -591,7 +599,7 @@ sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} || ech
 
 ### Install pasystray version 0.7.1-2 (later versions are black only)
 sudo cp ~/jeremy-venditto/dotfiles/.resources/packages/pasystray/* /var/cache/pacman/pkg
-sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst
+sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst --noconfirm
  # add pasystray to list of ignored upgrade
 #echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
 sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
@@ -602,27 +610,31 @@ sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
 
   # All Systems
 sudo usermod -aG video $USER
+echo;echo -e ${green}"User added to group 'video'"${reset};echo
 
   # System Specific
-checkvirtmanager=$(which virt-manager) > /dev/null 2>&1
-if [[ $checkvirtmanager = /usr/bin/virt-manager ]]; then sudo usermod -aG libvirt $USER;fi
+checkvirtmanager=$(which virt-manager > /dev/null 2>&1)
+if [[ $checkvirtmanager = /usr/bin/virt-manager ]]; then
+sudo usermod -aG libvirt $USER && echo -e ${green}"User added to group 'libvirt'"${reset};fi
 
-checkvirtualbox=$(which virtualbox) > /dev/null 2>&1
-if [[ $checkvirtualbox = /usr/bin/virtualbox ]]; then sudo usermod -aG vboxusers $USER;fi
+checkvirtualbox=$(which virtualbox > /dev/null 2>&1)
+if [[ $checkvirtualbox = /usr/bin/virtualbox ]]; then
+sudo usermod -aG vboxusers $USER && echo -e ${green}"User added to group 'vboxusers'"${reset};fi
 
-checkdocker=$(which docker) > /dev/null 2>&1
-if [[ $checkdocker = /usr/bin/docker ]]; then sudo usermod -aG libvirt video vboxusers docker $USER;fi
+checkdocker=$(which docker > /dev/null 2>&1)
+if [[ $checkdocker = /usr/bin/docker ]]; then 
+sudo usermod -aG docker $USER && echo -e ${green}"User added to group 'docker'"${reset};fi
 
 ########################################################################
 #### Add setcap capabilities so we do not have to run these as root ####
 ########################################################################
 
    #Nethogs
-checknethogs=$(which nethogs) > /dev/null 2>&1
+checknethogs=$(which nethogs > /dev/null 2>&1)
 if [[ $checknethogs = /usr/bin/nethogs ]]; then setcap cap_net_admin,cap_net_raw+ep /usr/bin/nethogs;fi
 
    #Wireshark
-checkwireshark=$(which wireshark) > /dev/null 2>&1
+checkwireshark=$(which wireshark > /dev/null 2>&1)
 if [[ $checkwireshark = /usr/bin/wireshark ]]; then setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap;fi
 
 ###############################################################
@@ -714,6 +726,4 @@ done
 
 #### TO DO #####
 # Make wallpaper directory switcher script
-# Enable sudo privlidges in tty
-# Fix Grub image settings
-# add pacman color.. fix ignore pasystray
+# sed arch-user to $USER on all config files before copying config
