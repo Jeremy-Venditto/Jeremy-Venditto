@@ -222,7 +222,7 @@ pacman -S archlinux-keyring
 echo
 echo -e ${red}'Installing base system'${reset}
 echo
-pacstrap /mnt base linux linux-firmware sudo nano curl
+pacstrap /mnt base linux linux-firmware sudo nano curl reflector
 echo -e ${green}'System Installed'${reset}
 
 # Generate File System Table
@@ -335,8 +335,10 @@ echo -e ${green}'Grub Configuration created'${reset}
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
 mv /arch-install.sh /home/$USERUSERNAME/ && chown $USERUSERNAME /home/$USERUSERNAME/arch-install.sh
+# Clean up
 rm /hostname.txt && rm /efi.txt
 echo
+# Script part 1 complete
 echo -e ${green}'You may now reboot your system'${reset}
 echo -e ${cyan}'Run this script again at next boot'${reset}
 }
@@ -389,7 +391,7 @@ done
 echo -e ${yellow}'Enabling Parallel Downloads'${reset}
 sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
 echo -e ${yellow}'Enabling Color for Pacman'${reset}
-sudo sed -i "/#Color/c\Color" ~/etc/pacman.conf
+sudo sed -i "/#Color/c\Color" /etc/pacman.conf
 
 # Install git and build tools
 echo
@@ -443,7 +445,7 @@ sudo pacman -S archlinux-keyring --noconfirm
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct --noconfirm
 
         #Install yay AUR helper
 echo
@@ -489,7 +491,7 @@ cp ~/jeremy-venditto/dotfiles/.bash_profile ~/
 echo -e ${yellow}'Updated ~/.bashrc'${reset}
 cp ~/jeremy-venditto/dotfiles/.bashrc ~/
 echo -e ${yellow}'Updated ~/.gtkrc-2.0'${reset}
-cp ~/jeremy-venditto/dotfiles/.gtkrc-2.0 ~/
+cp ~/jeremy-venditto/dotfiles/.config/gtk-2.0/.gtkrc-2.0_dark ~/.gtkrc-2.0
 echo -e ${yellow}'Updated ~/.profile'${reset}
 cp ~/jeremy-venditto/dotfiles/.profile ~/
 echo -e ${yellow}'Updated ~/.xinitrc'${reset}
@@ -582,6 +584,51 @@ sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
 ## End of Script
 echo
 echo -e ${green}'Script Complete!'${reset}
+
+# Add user to groups
+
+  # All Systems
+sudo usermod -aG video $USER
+
+  # System Specific
+
+checkvirtmanager=$(which virt-manager)
+if [[ $checkvirtmanager = /usr/bin/virt-manager ]]; then
+sudo usermod -aG libvirt $USER
+else echo 'virt-manager is not installed';fi
+
+checkvirtualbox=$(which virtualbox)
+if [[ $checkvirtualbox = /usr/bin/virtualbox ]]; then
+sudo usermod -aG vboxusers $USER
+else echo 'virtualbox is not installed';fi
+
+checkdocker=$(which docker)
+if [[ $checkdocker = /usr/bin/docker ]]; then
+sudo usermod -aG libvirt video vboxusers docker $USER
+else echo 'Docker is not installed';fi
+
+# Add setcap capabilities so we do not have to run these as root
+   #Nethogs
+checknethogs=$(which nethogs)
+if [[ $checknethogs = /usr/bin/nethogs ]]; then
+setcap cap_net_admin,cap_net_raw+ep /usr/bin/nethogs
+else echo 'Nethogs is not installed';fi
+
+   #Wireshark
+checkwireshark=$(which wireshark)
+if [[ $checkwireshark = /usr/bin/wireshark ]]; then
+setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap
+else echo 'Wireshark is not installed';fi
+
+# Configure Cursors, Icons and Themes (GTK-2/3 and QT5)
+# Adwaita
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar -C /usr/share/themes
+# Adwaita-Dark
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/175933-AdwaitaDark.tar.gz -C /usr/share/themes
+# Kanada Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/KanadaIcons.tar.gz -C /usr/share/icons
+# Kanada Cursors
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.gz /usr/share/icons
 }
 
 
