@@ -737,6 +737,9 @@ echo -e ${yellow}'Sweet Dark Icons added'${reset}
 # Sweet Mars Icons
 sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-mars.tar.xz -C /usr/share/icons
 echo -e ${yellow}'Sweet Mars icons added'${reset}
+# Enlightenment-X Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Enlightenment-X.tar.xz -C /usr/share/icons
+echo -e ${yellow}'Enlightenment-X icons added'${reset}
 
 
 ## End of Script
