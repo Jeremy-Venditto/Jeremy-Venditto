@@ -285,16 +285,38 @@ echo -e ${green}'NetworkManager has been enabled'${reset}
 
 # Set Root Password
 echo;echo -e ${red}'Set Root password...'${reset}
-passwd
+until passwd
+do echo 'try again'
+done
 echo
 
 # Create User
 echo -e ${cyan}'Creating User'${reset}${yellow}
+function CREATE_USERNAME {
 read -rp "Username: " USERUSERNAME
-#USERUSERNAME="arch-user"
+echo "Username set as: $USERUSERNAME"
+read -r -p "Correct? [Y/n] " input
+ 
+case $input in
+    [yY][eE][sS]|[yY])
 useradd -m -g users -G wheel -s /bin/bash $USERUSERNAME
+ ;;
+    [nN][oO]|[nN])
+CREATE_USERNAME
+       ;;
+    *)
+ echo "Invalid input..."
+ ;;
+esac
+}
+# run above function
+CREATE_USERNAME
+
 echo -e ${red}'Set User Password'${reset}
-passwd $USERUSERNAME
+until passwd $USERUSERNAME
+do echo 'try again'
+done
+
 echo -e ${green}'User Creation Complete'${reset}
 echo
   # Add user to wheel group for sudo privlidges
@@ -354,8 +376,10 @@ function USERSPACE_SHELL {
 			### PROMPT ###
 			##############
 
+# Prompt to select configuration installation method
+function CONFIG_CHOICE {
 PS3='Please enter your choice: '
-options=("Laptop" "Desktop" "Virtual Machine" "Quit")
+options=("Laptop" "Desktop" "Virtual Machine" "Base-Install" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -375,9 +399,10 @@ do
             break
             ;;
         "Base Install")
-            MACHINE="BASE-INSTALL"
-# if machine does not equal base install dont do script.. (probably not)
-# reorder configuration and make a function of base_install (probably this one)
+#            MACHINE="BASE-INSTALL"
+# Instal Window Manager or Desktop Environment of choice of Choice
+# Install Xorg / Lightdm / Pulseaudio On Window Managers
+ARCH_BASE_INSTALL
             break
             ;;
         "Quit")
@@ -386,6 +411,43 @@ do
         *) echo "invalid option $REPLY";;
     esac
 done
+}
+# Run above function
+CONFIG_CHOICE
+
+# Base-Install function
+function ARCH_BASE_INSTALL {
+PS3='Please enter your choice: '
+options=("KDE-Plasma" "MATE" "Awesome WM" "Back" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "KDE-Plasma")
+            break
+            exit 1
+            ;;
+        "MATE")
+            break
+            exit 1
+            ;;
+        "Awesome WM")
+sudo pacman -S awesome xterm
+            break
+            exit 1
+            ;;
+        "Back")
+            CONFIG_CHOICE
+            break
+            ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+
+}
+
 
 			##################
 			### ESSENTIALS ###
@@ -484,10 +546,10 @@ echo -e ${yellow}'Installing Virtual Machine Packages'${reset}
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/packages/pacman_vm.txt --noconfirm
 #yay -S - < ~/jeremy-venditto/dotfiles/.resources/packages/aur_vm.txt --noconfirm;fi
 fi
-if [[ $MACHINE = "BASE-INSTALL" ]]; then
-echo -e ${yellow}'Installing Bare Minumum Packages'${reset}
-#sudo pacman -S 
-fi
+#if [[ $MACHINE = "BASE-INSTALL" ]]; then
+#echo -e ${yellow}'Installing Bare Minumum Packages'${reset}
+#sudo pacman -S
+#fi
 
 			###################
 			### EDIT CONFIG ###
