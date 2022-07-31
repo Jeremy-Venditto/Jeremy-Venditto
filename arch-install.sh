@@ -225,7 +225,7 @@ echo
 echo -e ${red}'Installing base system'${reset}
 echo
 pacstrap /mnt base linux linux-firmware sudo nano curl reflector
-echo -e ${green}'System Installed'${reset}
+echo;echo -e ${green}'System Installed'${reset};echo
 
 # Generate File System Table
 echo -e ${yellow}'Generating File System Table'${reset}
@@ -325,13 +325,13 @@ echo
   echo
 # EFI
 echo -e ${cyan}'Creating EFI partition'${reset}
-mkdir /boot/efi > /dev/null 2<&1 # complains about fstab needing updating
-mount $EFI_PART /boot/efi
+mkdir /boot/efi
+mount $EFI_PART /boot/efi > /dev/null 2<&1 # complains about fstab needing updating
 echo -e ${green}'EFI partition created and mounted on /boot/efi'${reset}
 
 # Configure mkinitcpio again (worked without it on a VM but not on my 2nd laptop)
 echo;echo -e ${yellow}'Reconfiguring initramfs'
-mkinitcpio -P;echo
+mkinitcpio -P
 
 # Grub Bootloader
 echo;echo -e ${blue}'Installing grub'${reset};echo
