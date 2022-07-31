@@ -218,7 +218,7 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
 # Update iso (old iso pgp signature issues)
 echo;echo -e ${red}'Updating Archlinux Keyring on Arch ISO'${reset};echo
 pacman -Sy
-pacman -S archlinux-keyring
+pacman -S archlinux-keyring --noconfirm
 
 # Install System
 echo
@@ -294,7 +294,7 @@ echo
 echo -e ${cyan}'Creating User'${reset}${yellow}
 function CREATE_USERNAME {
 read -rp "Username: " USERUSERNAME
-echo "Username set as: $USERUSERNAME"
+echo;echo -e ${magenta}"Username set as: $USERUSERNAME"${reset}
 read -r -p "Correct? [Y/n] " input
  
 case $input in
@@ -312,12 +312,12 @@ esac
 # run above function
 CREATE_USERNAME
 
-echo -e ${red}'Set User Password'${reset}
+echo;echo -e ${red}'Set User Password'${reset}
 until passwd $USERUSERNAME
 do echo 'try again'
 done
 
-echo -e ${green}'User Creation Complete'${reset}
+echo;echo -e ${green}'User Creation Complete'${reset}
 echo
   # Add user to wheel group for sudo privlidges
   echo -e ${yellow}'Adding user to wheel group'${green}
@@ -325,21 +325,27 @@ echo
   echo
 # EFI
 echo -e ${cyan}'Creating EFI partition'${reset}
-mkdir /boot/efi
+mkdir /boot/efi > /dev/null 2<&1 # complains about fstab needing updating
 mount $EFI_PART /boot/efi
 echo -e ${green}'EFI partition created and mounted on /boot/efi'${reset}
 
 # Configure mkinitcpio again (worked without it on a VM but not on my 2nd laptop)
-mkinitcpio -P
+echo;echo -e ${yellow}'Reconfiguring initramfs'
+mkinitcpio -P;echo
 
 # Grub Bootloader
-echo
-echo -e ${blue}'Installing grub'${reset}
-#grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable && echo 'Grub installed..'
+echo;echo -e ${blue}'Installing grub'${reset};echo
 grub-install && echo -e ${green}'Grub Installed'${reset}
-echo -e ${yellow}'Generating Grub Configuration file'${reset}
+echo;echo -e ${yellow}'Generating Grub Configuration file'${reset}
+echo;grub-mkconfig -o /boot/grub/grub.cfg
+echo;echo -e ${green}'Grub Configuration created'${reset}
+# Enable Grub to detect other operating systems
+echo;echo -e ${magenta}'Enabling Grub to detect other Operating Systems'${reset}
+echo;echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a /etc/default/grub
+echo;echo -e ${bold}'Regenerating Grub Configuration'${reset}
 grub-mkconfig -o /boot/grub/grub.cfg
-echo -e ${green}'Grub Configuration created'${reset}
+echo;echo -e ${green}'Grub Configuration created'${reset}
+
 
 # Add Microcode for AMD and Intel Processors
 CPU_TYPE=$(lscpu | grep Vendor | cut -d : -f 2 | sed 's/ //g')
@@ -348,14 +354,6 @@ sudo pacman -S intel-ucode && echo -e ${magenta}'Installed Intel Microcode'${res
 if [[ $CPU_TYPE = AuthenticAMD ]]; then
 sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
 
-# Enable Grub to detect other operating systems
-echo -e ${magenta}'Enabling Grub to detect other Operating Systems'${reset}
-echo 'GRUB_DISABLE_OS_PROBER=false' | sudo tee -a /etc/default/grub
-echo -e ${bold}'Regenerating Grub Configuration'${reset}
-grub-mkconfig -o /boot/grub/grub.cfg
-echo -e ${green}'Grub Configuration created'${reset}
-
-
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
 mv /arch-install.sh /home/$USERUSERNAME/ && chown $USERUSERNAME /home/$USERUSERNAME/arch-install.sh
@@ -363,8 +361,8 @@ mv /arch-install.sh /home/$USERUSERNAME/ && chown $USERUSERNAME /home/$USERUSERN
 rm /hostname.txt && rm /efi.txt
 echo
 # Script part 1 complete
-echo -e ${green}'You may now reboot your system'${reset}
-echo -e ${cyan}'Run this script again at next boot'${reset}
+echo;echo -e ${green}'You may now reboot your system'${reset}
+echo -e ${cyan}'Run this script again at next boot'${reset};echo
 }
 
 #----------------------------------------------------
