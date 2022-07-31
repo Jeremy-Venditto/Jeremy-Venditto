@@ -64,13 +64,13 @@ function AUTOMATED_ALL {
 read -r -p "Automate Script? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY]) AUTOMATED=YES ;;
     [nN][oO]|[nN]) AUTOMATED=NO      ;; *) echo "Invalid input...";exit 1;;esac
-}
+} # End function AUTOMATED_ALL
 function AUTOMATED_DESKTOP {
 echo 'hi'
-}
+} # End function AUTOMATED_DESKTOP
 function AUTOMATED_LAPTOP {
 echo 'hi'
-}
+} # End function AUTOMATED_LAPTOP
 function AUTOMATED_VM {
 cat ~/jeremy-venditto/automated_vm.txt << 'EOF'
 y
@@ -83,7 +83,7 @@ EOF
 ~/jeremy-venditto/automated_vm.txt | ~/jeremy-venditto/arch-install.sh
 #automated answers
 #printf '%s\n' y | arch-install.sh
-}
+} # End function AUTOMATED_VM
 
 
 function DISKS_PARTITIONS {
@@ -165,7 +165,7 @@ lsblk
 #;;
 #*) echo "Invalid input...";exit 1;;esac
 
-}
+} # End function DISKS_PARTITIONS
 
 
 
@@ -243,7 +243,8 @@ mv hostname.txt /mnt/
 # Chroot into system
 echo -e ${cyan}"Chrooting into system"${reset}
 arch-chroot /mnt /bin/bash /arch-install.sh -a
-}
+
+} # End function ARCH_ISO
 
         #############################################  ###################################
         ### Arch ISO enviroment after arch-chroot ###  ## (ARCH ISO ENVIRONMENT PART 2) ##
@@ -363,18 +364,19 @@ echo
 # Script part 1 complete
 echo;echo -e ${green}'You may now reboot your system'${reset}
 echo -e ${cyan}'Run this script again at next boot'${reset};echo
-}
+
+} # End function ISO_AFTER_CHROOT
 
 #----------------------------------------------------
 function USERSPACE_SHELL {
 #Install Everything else
-
 
 			##############
 			### PROMPT ###
 			##############
 
 # Prompt to select configuration installation method
+
 function CONFIG_CHOICE {
 PS3='Please enter your choice: '
 options=("Laptop" "Desktop" "Virtual Machine" "Base-Install" "Quit")
@@ -409,7 +411,8 @@ ARCH_BASE_INSTALL
         *) echo "invalid option $REPLY";;
     esac
 done
-}
+
+} # End function CONFIG_CHOICE
 # Run above function
 CONFIG_CHOICE
 
@@ -429,7 +432,7 @@ do
             exit 1
             ;;
         "Awesome WM")
-sudo pacman -S awesome xterm
+            sudo pacman -S awesome xterm
             break
             exit 1
             ;;
@@ -444,12 +447,12 @@ sudo pacman -S awesome xterm
     esac
 done
 
-}
+} # End function ARCH_BASE_INSTALL
 
 
-			##################
-			### ESSENTIALS ###
-			##################
+              ####################
+              #### ESSENTIALS ####
+              ####################
 
 ## Enable Parallel Downloads and Color for Pacman
 sudo sed -i '37s!#ParallelDownloads = 5!ParallelDownloads = 5!' /etc/pacman.conf
@@ -475,9 +478,9 @@ git clone https://github.com/jeremy-venditto/dotfiles
 echo;echo -e ${yellow}'Downloading wallpaper'${reset}
  # 800 wallpapers...
 #git clone https://github.com/jeremy-venditto/wallpaper
- 
+
 # to not download 800 wallpapers...
-mkdir -p ~/jeremy-venditto/wallpaper/1920x1080 
+mkdir -p ~/jeremy-venditto/wallpaper/1920x1080
 curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/001.jpg
 curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/002.jpg
 curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/003.jpg
@@ -494,9 +497,9 @@ mv 006.jpg ~/jeremy-venditto/wallpaper/1920x1080
 mv 007.jpg ~/jeremy-venditto/wallpaper/1920x1080
 
 
-			##################
-			#### PACKAGES ####
-			##################
+              ##################
+              #### PACKAGES ####
+              ##################
 
 ## Enable Multilib repository
 echo;echo -e ${yellow}'Enabling Multilib Repository'${reset}
@@ -549,14 +552,14 @@ fi
 #sudo pacman -S
 #fi
 
-			###################
-			### EDIT CONFIG ###
-			###################
+              ###################
+              ### EDIT CONFIG ###
+              ###################
 
-# Move config files
+# Move config files/directories
     #files
 echo -e ${cyan}'Copying configuration files'${reset}
-
+echo
 echo -e ${yellow}'Updated ~/.bash_profile'${reset}
 cp ~/jeremy-venditto/dotfiles/.bash_profile ~/
 echo -e ${yellow}'Updated ~/.bashrc'${reset}
@@ -590,26 +593,32 @@ if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wall
 if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 
-
-## Screen Resolution for virtual machines
+# Create screen resolution scripts for virtual machines
 if [[ $MACHINE = VIRTUAL ]]; then
 echo -e ${yellow}'Added 2 screen resolution scripts to ~/'${reset}
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/screen-normal.sh
+echo "xrandr --output Virtual-1 --primary --mode 1600x900 --rate 60" > ~/screen-almost-full.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/screen-full.sh
-chmod +x ~/screen-normal.sh ~/screen-full.sh;fi
+chmod +x ~/screen-normal.sh ~/screen-almost-full.sh ~/screen-full.sh;fi
 
-		# Services
+              #########################
+              #### Enable Services ####
+              #########################
 
 # Enable UFW firewall
 echo -e ${cyan}'Enabling UFW Firewall'${reset}
 sudo ufw enable && sudo systemctl enable --now ufw
 
+# Enable TLP for laptop battery)
+if [[ $MACHINE = LAPTOP ]]; then sudo systemctl enable tlp;fi
+
 # Enable LightDM
 echo -e ${cyan}'Enabling LightDM Display Manager'${reset}
 sudo systemctl enable lightdm
 
-# Enable TLP for laptop battery)
-if [[ $MACHINE = LAPTOP ]]; then sudo systemctl enable tlp;fi
+              #####################################
+              #### Update Application Settings ####
+              #####################################
 
 # Change LightDM settings
 echo -e ${magenta}'LightDM Settings Have Been Updated.'${reset}
@@ -620,18 +629,8 @@ sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /
 if [[ $MACHINE = VIRTUAL ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
-# Change Nitrogen Settings
-#echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
-#echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
-
-#if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-#if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-#if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-
 # Change Grub Wallpaper
 echo -e ${magenta}'Updating GRUB Settings...'${reset}
-#sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/home/"$USER"/wallpaper/grub/004-1024x768" /etc/default/grub
-#sudo cp ~/wallpaper/grub/004-1024-768.png /usr/share/pixmaps/grub.png
 sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 sudo grub-mkconfig -o /boot/grub/grub.cfg
@@ -649,24 +648,24 @@ cp -r ~/github/dotfiles/.config/firefox/firefox-dark ~/.mozilla
 
 # Copy Xterm configuration
 echo -e ${green}'Xterm configuration copied to ~/.Xresources'${reset}
-#cp ~/jeremyvenditto/dotfiles/.config/xterm/Xresources-dark ~/.Xresources
 cp ~/.config/xterm/Xresources-dark ~/.Xresources
 xrdb ~/.Xresources
 
-### Install Dmenu
+# Install Dmenu
 echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
 sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} || echo -e ${red}'Dmenu Installation Failed.'${reset}
 
-### Install pasystray version 0.7.1-2 (later versions are black only)
+# Install pasystray version 0.7.1-2 (later versions are black only)
+ # This may be outdated now.. check it later
 sudo cp ~/jeremy-venditto/dotfiles/.resources/packages/pasystray/* /var/cache/pacman/pkg
 sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst --noconfirm
  # add pasystray to list of ignored upgrade
 #echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
 sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
 
-############################
-#### Add user to groups ####
-############################
+              ############################
+              #### Add user to groups ####
+              ############################
 
   # All Systems
 sudo usermod -aG video $USER
@@ -685,9 +684,9 @@ checkdocker=$(which docker > /dev/null 2>&1)
 if [[ $checkdocker = /usr/bin/docker ]]; then 
 sudo usermod -aG docker $USER && echo -e ${green}"User added to group 'docker'"${reset};fi
 
-########################################################################
-#### Add setcap capabilities so we do not have to run these as root ####
-########################################################################
+              ########################################################################
+              #### Add setcap capabilities so we do not have to run these as root ####
+              ########################################################################
 
    #Nethogs
 checknethogs=$(which nethogs > /dev/null 2>&1)
@@ -697,9 +696,9 @@ if [[ $checknethogs = /usr/bin/nethogs ]]; then setcap cap_net_admin,cap_net_raw
 checkwireshark=$(which wireshark > /dev/null 2>&1)
 if [[ $checkwireshark = /usr/bin/wireshark ]]; then setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap;fi
 
-###############################################################
-#### Configure Cursors, Icons and Themes (GTK-2/3 and QT5) ####
-###############################################################
+              ###############################################################
+              #### Configure Cursors, Icons and Themes (GTK-2/3 and QT5) ####
+              ###############################################################
 
 # Adwaita
 sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar.gz -C /usr/share/themes
@@ -741,11 +740,13 @@ echo -e ${yellow}'Sweet Mars icons added'${reset}
 sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Enlightenment-X.tar.xz -C /usr/share/icons
 echo -e ${yellow}'Enlightenment-X icons added'${reset}
 
+              ###################
+              ## End of Script ##
+              ###################
 
-## End of Script
-echo
-echo -e ${green}'Script Complete!'${reset}
-}
+echo;echo -e ${green}'Script Complete!'${reset}
+
+} # End function USERSPACE_SHELL
 
 
 						#~~~############~~~#
@@ -763,8 +764,8 @@ done
 
 
 
-# AUTOMATED PROMPT
-AUTOMATED_ALL
+# AUTOMATED PROMPT ( does do anything RIGHT NOW, so KEEP IT)
+# AUTOMATED_ALL
 
 ### MAIN PROMPT ####
 PS3='Please enter your choice: '
