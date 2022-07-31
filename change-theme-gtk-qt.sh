@@ -81,7 +81,7 @@ mv qt5ct.conf_light ~/.config/qt5ct/
 fi
 
 GTK_CURRENT_THEME=$(cat ~/.gtkrc-2.0 | grep gtk-theme-name | cut -d '"' -f2)
-if [[ $GTK_CURRENT_THEME = Adwaita-Dark ]]; then GTK_THEME=DARK;fi
+if [[ $GTK_CURRENT_THEME = Adwaita-dark ]]; then GTK_THEME=DARK;fi
 if [[ $GTK_CURRENT_THEME = Adwaita ]]; then GTK_THEME=LIGHT;fi
 if [[ $GTK_THEME = DARK ]]; then
 cp ~/.config/gtk-2.0/gtkrc-2.0_light ~/.gtkrc-2.0 &&
@@ -102,8 +102,8 @@ fi
 
 function Xterm {
 XTERM_THEME=$(cat ~/.Xresources | grep foreground | cut -d ':' -f2 | cut -d ' ' -f2)
-if [[ $XTERM_THEME = black ]]; then cp ~/.config/xterm/Xreources-light ~/.Xresources;fi
-if [[ $XTERM_THEME = white ]]; then cp ~/.config/xterm/Xreources-dark ~/.Xresources;fi
+if [[ $XTERM_THEME = black ]]; then cp ~/.config/xterm/Xresources-light ~/.Xresources;fi
+if [[ $XTERM_THEME = white ]]; then cp ~/.config/xterm/Xresources-dark ~/.Xresources;fi
 xrdb ~/.Xresources
 }
 
@@ -133,7 +133,7 @@ while getopts ":dhl" option; do
          cp ~/.config/gtk-2.0/gtkrc-2.0_dark ~/.gtkrc-2.0
          cp ~/.config/gtk-3.0/settings.ini_dark ~/.config/gtk-3.0/settings.ini
          cp ~/.config/qt5ct/qt5ct.conf_dark ~/.config/qt5ct/qt5ct.conf
-         cp ~/.config/xterm/Xreources-light ~/.Xresources
+         cp ~/.config/xterm/Xresources-light ~/.Xresources
          exit;;
       h) # Print Help
          HELP_FUNCTION
@@ -142,7 +142,7 @@ while getopts ":dhl" option; do
          cp ~/.config/gtk-2.0/gtkrc-2.0_light ~/.gtkrc-2.0
          cp ~/.config/gtk-3.0/settings.ini_light ~/.config/gtk-3.0/settings.ini
          cp ~/.config/qt5ct/qt5ct.conf_light ~/.config/qt5ct/qt5ct.conf
-         cp ~/.config/xterm/Xreources-light ~/.Xresources
+         cp ~/.config/xterm/Xresources-light ~/.Xresources
 exit;;
      \?) # Invalid option
          echo "Error: Invalid option"

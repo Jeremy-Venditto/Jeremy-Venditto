@@ -516,7 +516,7 @@ sudo pacman -S archlinux-keyring --noconfirm
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio kvantum --noconfirm
 
         #Install yay AUR helper
 echo
