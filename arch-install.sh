@@ -739,6 +739,9 @@ echo -e ${yellow}'Sweet Mars icons added'${reset}
 # Enlightenment-X Icons
 sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Enlightenment-X.tar.xz -C /usr/share/icons
 echo -e ${yellow}'Enlightenment-X icons added'${reset}
+# ePapirus Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/ePapirus.tar.xz -C /usr/share/icons
+echo -e ${yellow}'ePapirus Icons added'${reset}
 
               ###################
               ## End of Script ##
