@@ -215,10 +215,27 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
     [yY][eE][sS]|[yY]) echo -e ${reset} "Yes" > /dev/null ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
 
+
+# Update Mirrorlist manually
+echo 'Server = https://at.arch.mirror.kescher.at/$repo/os/$arch' > /etc/pacman.d/mirrorlist
+echo 'Server = https://de.arch.mirror.kescher.at/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = http://mirror.telepoint.bg/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = https://mirror.telepoint.bg/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = rsync://mirror.telepoint.bg/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = https://archlinux.mailtunnel.eu/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = http://mirror.lty.me/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = http://mirror.cyberbits.eu/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = https://mirror.cyberbits.eu/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+echo 'Server = rsync://rsync.cyberbits.eu/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
+
+# Update Mirrorlist automatically
+reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
+
 # Update iso (old iso pgp signature issues)
 echo;echo -e ${red}'Updating Archlinux Keyring on Arch ISO'${reset};echo
 pacman -Sy
 pacman -S archlinux-keyring --noconfirm
+
 
 # Install System
 echo
@@ -507,8 +524,8 @@ sudo sed -i '94s!#Include = /etc/pacman.d/mirrorlist!Include = /etc/pacman.d/mir
 sudo pacman -Syyu
 
 ## Get Fastest Mirrors
-echo;echo -e ${cyan}'Setting mirrors to the fastest ones (this will take a while)'${reset}
-sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
+#echo;echo -e ${cyan}'Setting mirrors to the fastest ones (this will take a while)'${reset}
+#sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 
 ## Install Packages
 
@@ -610,7 +627,7 @@ echo -e ${cyan}'Enabling UFW Firewall'${reset}
 sudo ufw enable && sudo systemctl enable --now ufw
 
 # Enable TLP for laptop battery)
-if [[ $MACHINE = LAPTOP ]]; then sudo systemctl enable tlp;fi
+if [[ $MACHINE = LAPTOP ]]; then sudo systemctl enable --now tlp;fi
 
 # Enable LightDM
 echo -e ${cyan}'Enabling LightDM Display Manager'${reset}
@@ -674,7 +691,8 @@ echo;echo -e ${green}"User added to group 'video'"${reset};echo
   # System Specific
 checkvirtmanager=$(which virt-manager > /dev/null 2>&1)
 if [[ $checkvirtmanager = /usr/bin/virt-manager ]]; then
-sudo usermod -aG libvirt $USER && echo -e ${green}"User added to group 'libvirt'"${reset};fi
+sudo usermod -aG libvirt $USER && sudo systemctl enable --now libvirtd
+echo -e ${green}"User added to group 'libvirt'"${reset};fi
 
 checkvirtualbox=$(which virtualbox > /dev/null 2>&1)
 if [[ $checkvirtualbox = /usr/bin/virtualbox ]]; then
