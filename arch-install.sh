@@ -214,7 +214,7 @@ read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
 # I dont think the echo -e reset below does anything.. next output was green'
     [yY][eE][sS]|[yY]) echo -e ${reset} "Yes" > /dev/null ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
-
+${reset}
 
 # Update Mirrorlist manually
 echo 'Server = https://at.arch.mirror.kescher.at/$repo/os/$arch' > /etc/pacman.d/mirrorlist
@@ -537,6 +537,9 @@ sudo pacman -S archlinux-keyring --noconfirm
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
 sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio kvantum --noconfirm
+# Retry packages if they fail
+if [[ $? != 0 ]];then !!;fi
+
 
         #Install yay AUR helper
 echo
@@ -590,7 +593,7 @@ cp ~/jeremy-venditto/dotfiles/.xinitrc ~/
 echo -e ${yellow}'Updated ~/.xprofile'${reset}
 cp ~/jeremy-venditto/dotfiles/.xprofile ~/
 echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
-sudo cp ~/jeremy-venditto/dotfiles/.resources/usrshare/pixmaps/* /usr/share/pixmaps/
+sudo cp ~/jeremy-venditto/dotfiles/.resources/usr/share/pixmaps/* /usr/share/pixmaps/
     #directories
 echo -e ${yellow}'Updated ~/.config/'${reset}
 mkdir -p ~/.config
@@ -724,26 +727,26 @@ mkdir -p ~/.local/share/icons
 mkdir -p ~/.local/share/themes
 
 # Fonts
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts
 echo -e ${yellow}'Adobe Fonts Installed'${reset}
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/google-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/google-all.tar.xz -C ~/.local/share/fonts
 echo -e ${yellow}'Google Fonts Installed'${reset}
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/microsoft-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/microsoft-all.tar.xz -C ~/.local/share/fonts
 echo -e ${yellow}'Microsoft Fonts Installed'${reset}
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/share/fonts
 echo -e ${yellow}'Nerd Fonts Installed'${reset}
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts
 echo -e ${yellow}'Noto Fonts Installed'${reset}
 
 # Cursors
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/icons
+tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/icons
 echo -e ${yellow}'Cursors Installed'${reset}
 
 # Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/icons-all.tar.xz -C ~/.local/share/icons
+tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/icons-all.tar.xz -C ~/.local/share/icons
 echo -e ${yellow}'Icons Installed'${reset}
 # Themes
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/themes-all.tar.xz -C ~/.local/share/themes
+tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/themes-all.tar.xz -C ~/.local/share/themes
 echo -e ${yellow}'Themes Installed'${reset}
 
 
