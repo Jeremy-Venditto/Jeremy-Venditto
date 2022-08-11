@@ -209,12 +209,11 @@ echo $HOSTNAME > hostname.txt
 
 # Set Disk/Partitions
 DISKS_PARTITIONS
-echo -e ${green}
-read -r -p "Are the Partitions Correct? [Y/n] " input ; case $input in
+echo -e ${green} "Are the Partitions Correct?" ${reset}
+read -r -p "[Y/n] " input ; case $input in
 # I dont think the echo -e reset below does anything.. next output was green'
-    [yY][eE][sS]|[yY]) echo -e ${reset} "Yes" > /dev/null ;;
-    [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";exit 1;;esac
-${reset}
+    [yY][eE][sS]|[yY]) echo "Yes" > /dev/null ;;
+    [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";;esac
 
 # Update Mirrorlist manually
 echo 'Server = https://at.arch.mirror.kescher.at/$repo/os/$arch' > /etc/pacman.d/mirrorlist
@@ -229,7 +228,7 @@ echo 'Server = https://mirror.cyberbits.eu/archlinux/$repo/os/$arch' >> /etc/pac
 echo 'Server = rsync://rsync.cyberbits.eu/archlinux/$repo/os/$arch' >> /etc/pacman.d/mirrorlist
 
 # Update Mirrorlist automatically
-reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
+#reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 
 # Update iso (old iso pgp signature issues)
 echo;echo -e ${red}'Updating Archlinux Keyring on Arch ISO'${reset};echo
@@ -651,7 +650,7 @@ sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.co
 
 # Change Grub Wallpaper
 echo -e ${magenta}'Updating GRUB Settings...'${reset}
-sudo cp ~/jeremy-venditto/dotfiles/.resources/usrshare/pixmaps/grub.png /usr/share/pixmaps/
+sudo cp ~/jeremy-venditto/dotfiles/.resources/usr/share/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 echo -e ${magenta}'GRUB Settings Have Been Updated.'${reset}
@@ -743,7 +742,7 @@ echo -e ${yellow}'Nerd Fonts Installed'${reset}
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts/noto
 echo -e ${yellow}'Noto Fonts Installed'${reset}
 # Cursors
-tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/cursors
+tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz -C ~/.local/share/cursors
 echo -e ${yellow}'Cursors Installed'${reset}
 # Icons
 tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/icons-all.tar.xz -C ~/.local/share/icons
