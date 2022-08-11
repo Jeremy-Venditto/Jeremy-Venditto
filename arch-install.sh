@@ -723,23 +723,29 @@ if [[ $checkwireshark = /usr/bin/wireshark ]]; then setcap 'CAP_NET_RAW+eip CAP_
 
 
 mkdir -p ~/.local/share/fonts
+mkdir -p ~/.local/share/fonts/adobe
+mkdir -p ~/.local/share/fonts/google
+mkdir -p ~/.local/share/fonts/microsoft
+mkdir -p ~/.local/share/fonts/nerd
+mkdir -p ~/.local/share/fonts/noto
 mkdir -p ~/.local/share/icons
 mkdir -p ~/.local/share/themes
+mkdir -p ~/.local/share/cursors
 
 # Fonts
-tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts/adobe
 echo -e ${yellow}'Adobe Fonts Installed'${reset}
-tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/google-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/google-all.tar.xz -C ~/.local/share/fonts/google
 echo -e ${yellow}'Google Fonts Installed'${reset}
-tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/microsoft-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/microsoft-all.tar.xz -C ~/.local/share/fonts/microsoft
 echo -e ${yellow}'Microsoft Fonts Installed'${reset}
-tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/share/fonts/nerd
 echo -e ${yellow}'Nerd Fonts Installed'${reset}
-tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts
+tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts/noto
 echo -e ${yellow}'Noto Fonts Installed'${reset}
 
 # Cursors
-tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/icons
+tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/cursors
 echo -e ${yellow}'Cursors Installed'${reset}
 
 # Icons
