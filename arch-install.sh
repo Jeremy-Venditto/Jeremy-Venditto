@@ -590,7 +590,7 @@ cp ~/jeremy-venditto/dotfiles/.xinitrc ~/
 echo -e ${yellow}'Updated ~/.xprofile'${reset}
 cp ~/jeremy-venditto/dotfiles/.xprofile ~/
 echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
-sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/* /usr/share/pixmaps/
+sudo cp ~/jeremy-venditto/dotfiles/.resources/usrshare/pixmaps/* /usr/share/pixmaps/
     #directories
 echo -e ${yellow}'Updated ~/.config/'${reset}
 mkdir -p ~/.config
@@ -640,15 +640,15 @@ sudo systemctl enable lightdm
 # Change LightDM settings
 echo -e ${magenta}'LightDM Settings Have Been Updated.'${reset}
 if [[ $MACHINE = DESKTOP ]]; then
-sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
+sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = LAPTOP ]]; then
-sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
+sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = VIRTUAL ]]; then
-sudo cp ~/jeremy-venditto/dotfiles/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
+sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
 
 # Change Grub Wallpaper
 echo -e ${magenta}'Updating GRUB Settings...'${reset}
-sudo cp ~/jeremy-venditto/dotfiles/usr/share/pixmaps/grub.png /usr/share/pixmaps/
+sudo cp ~/jeremy-venditto/dotfiles/.resources/usrshare/pixmaps/grub.png /usr/share/pixmaps/
 sudo sed -i "/#GRUB_BACKGROUND=/c\GRUB_BACKGROUND=/usr/share/pixmaps/grub.png" /etc/default/grub
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 echo -e ${magenta}'GRUB Settings Have Been Updated.'${reset}
@@ -714,52 +714,81 @@ if [[ $checknethogs = /usr/bin/nethogs ]]; then setcap cap_net_admin,cap_net_raw
 checkwireshark=$(which wireshark > /dev/null 2>&1)
 if [[ $checkwireshark = /usr/bin/wireshark ]]; then setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap;fi
 
-              ###############################################################
-              #### Configure Cursors, Icons and Themes (GTK-2/3 and QT5) ####
-              ###############################################################
+              ######################################################################
+              #### Configure Cursors, Fonts, Icons and Themes (GTK-2/3 and QT5) ####
+              ######################################################################
+
+
+mkdir -p ~/.local/share/fonts
+mkdir -p ~/.local/share/icons
+mkdir -p ~/.local/share/themes
+
+# Fonts
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts
+echo -e ${yellow}'Adobe Fonts Installed'${reset}
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/google-all.tar.xz -C ~/.local/share/fonts
+echo -e ${yellow}'Google Fonts Installed'${reset}
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/microsoft-all.tar.xz -C ~/.local/share/fonts
+echo -e ${yellow}'Microsoft Fonts Installed'${reset}
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/share/fonts
+echo -e ${yellow}'Nerd Fonts Installed'${reset}
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts
+echo -e ${yellow}'Noto Fonts Installed'${reset}
+
+# Cursors
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/icons
+echo -e ${yellow}'Cursors Installed'${reset}
+
+# Icons
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/icons-all.tar.xz -C ~/.local/share/icons
+echo -e ${yellow}'Icons Installed'${reset}
+# Themes
+sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/themes-all.tar.xz -C ~/.local/share/themes
+echo -e ${yellow}'Themes Installed'${reset}
+
 
 # Adwaita
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar.gz -C /usr/share/themes
-echo -e ${yellow}'Adwaita Theme added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar.gz -C /usr/share/themes
+#echo -e ${yellow}'Adwaita Theme added'${reset}
 # Adwaita-Dark
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/148170-Adwaita-Dark.tar.gz -C /usr/share/themes
-echo -e ${yellow}'Adwaita-Dark Theme added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/148170-Adwaita-Dark.tar.gz -C /usr/share/themes
+#echo -e ${yellow}'Adwaita-Dark Theme added'${reset}
 # Kanada Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/KanadaIcons.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Kanada Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/KanadaIcons.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Kanada Icons added'${reset}
 # Kanada Cursors
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Kanada Cursors added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/KanadaCursors.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Kanada Cursors added'${reset}
 # Obsidian Red Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Obsidian-Red.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Obsidian Red Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Obsidian-Red.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Obsidian Red Icons added'${reset}
 # Candy Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/candy-icons.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Candy Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/candy-icons.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Candy Icons added'${reset}
 # Infinity Dark Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Infinity-Dark-Icons.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Infinity Dark Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Infinity-Dark-Icons.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Infinity Dark Icons added'${reset}
 # Infinity Light Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Infinity-Light-Icons.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Infinity Light Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Infinity-Light-Icons.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Infinity Light Icons added'${reset}
 # Red Dot Black Dark Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Red-Dot-Black-Dark-Icons.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Red Dot Black Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Red-Dot-Black-Dark-Icons.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Red Dot Black Icons added'${reset}
 # Shiny Dark Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Shiny-Dark-Icons.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Shiny Dark Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Shiny-Dark-Icons.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Shiny Dark Icons added'${reset}
 # Sweet Dark Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-Dark-v40.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Sweet Dark Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-Dark-v40.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Sweet Dark Icons added'${reset}
 # Sweet Mars Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-mars.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Sweet Mars icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Sweet-mars.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Sweet Mars icons added'${reset}
 # Enlightenment-X Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Enlightenment-X.tar.xz -C /usr/share/icons
-echo -e ${yellow}'Enlightenment-X icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/Enlightenment-X.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'Enlightenment-X icons added'${reset}
 # ePapirus Icons
-sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/ePapirus.tar.xz -C /usr/share/icons
-echo -e ${yellow}'ePapirus Icons added'${reset}
+#sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/ePapirus.tar.xz -C /usr/share/icons
+#echo -e ${yellow}'ePapirus Icons added'${reset}
 
               ###################
               ## End of Script ##

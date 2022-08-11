@@ -1587,7 +1587,7 @@ SINK_NAME_17=$(pacmd list-sinks | grep -A 500 'index: 17' | grep 'device.descrip
 SINK_NAME_18=$(pacmd list-sinks | grep -A 500 'index: 18' | grep 'device.description' | sed -n 1p | cut -d ' ' -f 3-14)
 
 function MISSING_PACKAGES {
-pacman -Q pulsemixer paprefs pulseaudio pulseaudio-equalizer bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth > error.txt 2>&1
+pacman -Q pulsemixer paprefs pulseaudio pulseaudio-equalizer-ladspa bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth > error.txt 2>&1
 MISSING_PKGS=$(cat error.txt | grep error | cut -d ' ' -f 3 | sed -e 's/^.//' -e 's/.$//')
 if [[ -z "$MISSING_PKGS" ]]; then rm error.txt; else
 echo -e ${bold}${uline}${red}"Missing Packages:"${reset}
