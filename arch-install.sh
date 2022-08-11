@@ -731,7 +731,6 @@ mkdir -p ~/.local/share/fonts/noto
 mkdir -p ~/.local/share/icons
 mkdir -p ~/.local/share/themes
 mkdir -p ~/.local/share/cursors
-
 # Fonts
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts/adobe
 echo -e ${yellow}'Adobe Fonts Installed'${reset}
@@ -743,11 +742,9 @@ tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/
 echo -e ${yellow}'Nerd Fonts Installed'${reset}
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts/noto
 echo -e ${yellow}'Noto Fonts Installed'${reset}
-
 # Cursors
 tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz ~/.local/share/cursors
 echo -e ${yellow}'Cursors Installed'${reset}
-
 # Icons
 tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/icons-all.tar.xz -C ~/.local/share/icons
 echo -e ${yellow}'Icons Installed'${reset}
@@ -756,6 +753,7 @@ tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/themes-all.tar.xz -C ~/.loc
 echo -e ${yellow}'Themes Installed'${reset}
 
 
+# Keeping this in case i want to revert to this method.. but honestly the above way is easier.
 # Adwaita
 #sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/144237-Adwaita.tar.gz -C /usr/share/themes
 #echo -e ${yellow}'Adwaita Theme added'${reset}
