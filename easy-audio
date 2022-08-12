@@ -13,7 +13,7 @@
   #Arch
   #bluez bluez-utils pulseaudio-bluetooth pulsemixer paprefs pulseaudio pulseaudio-equalizer bluez-tools pulseaudio-equalizer pavucontrol
     #Debian?
-    #bluez bluez-tools bluez-firmware pulseaudio-module-bluetooth
+    #bluez bluez-tools bluez-firmware pulseaudio-module-bluetooth      ####NEW pamixer will fix everything
 
 ### ~~~~~~~ BEGIN USER CONFIGURATION ~~~~~~~ ###
 

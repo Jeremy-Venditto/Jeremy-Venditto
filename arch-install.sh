@@ -209,10 +209,10 @@ echo $HOSTNAME > hostname.txt
 
 # Set Disk/Partitions
 DISKS_PARTITIONS
-echo -e ${green} "Are the Partitions Correct?" ${reset}
+echo;echo -e ${green}"Are the Partitions Correct?" ${reset}
 read -r -p "[Y/n] " input ; case $input in
 # I dont think the echo -e reset below does anything.. next output was green'
-    [yY][eE][sS]|[yY]) echo "Yes" > /dev/null ;;
+    [yY][eE][sS]|[yY]) ;;
     [nN][oO]|[nN]) DISKS_PARTITIONS ;; *) echo "Invalid input...";;esac
 
 # Update Mirrorlist manually
@@ -288,8 +288,8 @@ echo -e ${green}'Time Zone Configured'${reset}
 # Set Hostname
 echo -e ${cyan}'Creating Hostname'${reset}
 echo $HOSTNAME > /etc/hostname
-echo "127.0.1.1 localhost.localdomain $USERHOSTNAME" > /etc/hosts
-echo -e ${green}"Hostname set as $USERHOSTNAME"${reset}
+echo "127.0.1.1 localhost.localdomain $HOSTNAME" > /etc/hosts
+echo -e ${green}"Hostname set as $HOSTNAME"${reset}
 
 # Update and Install NetworkManager, Grub and EfiBootMgr
 echo -e ${yellow}'Updating System'${reset}
@@ -367,9 +367,11 @@ echo;echo -e ${green}'Grub Configuration created'${reset}
 # Add Microcode for AMD and Intel Processors
 CPU_TYPE=$(lscpu | grep Vendor | cut -d : -f 2 | sed 's/ //g')
 if [[ $CPU_TYPE = GenuineIntel ]]; then 
-sudo pacman -S intel-ucode && echo -e ${magenta}'Installed Intel Microcode'${reset};fi
+#sudo pacman -S intel-ucode && echo -e ${magenta}'Installed Intel Microcode'${reset};fi
+pacman -S intel-ucode && echo -e ${magenta}'Installed Intel Microcode'${reset};fi
 if [[ $CPU_TYPE = AuthenticAMD ]]; then
-sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
+#sudo pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
+pacman -S amd-ucode && echo -e ${magenta}'Installed AMD Microcode'${reset};fi
 
 # Moving arch-install.sh into new user home directory. Log in as user and run script
 	# add cron job here or something to boot script at next login
@@ -491,11 +493,14 @@ echo;echo -e ${yellow}'Retrieving bash scripts'${reset}
 git clone https://github.com/jeremy-venditto/bash-scripts
 echo;echo -e ${yellow}'Retrieving configuration files'${reset}
 git clone https://github.com/jeremy-venditto/dotfiles
+
+# Wallpaper
 echo;echo -e ${yellow}'Downloading wallpaper'${reset}
- # 800 wallpapers...
+
+  # 800 wallpapers...
 #git clone https://github.com/jeremy-venditto/wallpaper
 
-# to not download 800 wallpapers...
+  # to not download 800 wallpapers...
 mkdir -p ~/jeremy-venditto/wallpaper/1920x1080
 curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/001.jpg
 curl -O https://raw.githubusercontent.com/jeremy-venditto/wallpaper/main/1920x1080/002.jpg
@@ -523,8 +528,8 @@ sudo sed -i '94s!#Include = /etc/pacman.d/mirrorlist!Include = /etc/pacman.d/mir
 sudo pacman -Syyu
 
 ## Get Fastest Mirrors
-#echo;echo -e ${cyan}'Setting mirrors to the fastest ones (this will take a while)'${reset}
-#sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
+echo;echo -e ${cyan}'Setting mirrors to the fastest ones (this will take a while)'${reset}
+sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist
 
 ## Install Packages
 
@@ -532,11 +537,28 @@ sudo pacman -Syyu
 echo;echo -e ${red}'Updating Archlinux Keyring on System'${reset}
 sudo pacman -S archlinux-keyring --noconfirm
 
+
+
+##### NEW PACKAGE SOLUTION
+
+# My Program
+#sudo pacman -S pulsemixer paprefs pulseaudio pulseaudio-equalizer-ladspa bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth
+
+# All machine types
+#sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio kvantum --noconfirm
+
+# mpd/ncmpcpp
+#sudo pacman -S mpd mpc ncmpcpp
+
+
+
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
 sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio kvantum --noconfirm
 # Retry packages if they fail
+if [[ $? != 0 ]];then !!;fi
+sudo pacman -S pulsemixer paprefs pulseaudio pulseaudio-equalizer-ladspa bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth
 if [[ $? != 0 ]];then !!;fi
 
 
@@ -579,44 +601,47 @@ fi
     #files
 echo -e ${cyan}'Copying configuration files'${reset}
 echo
-echo -e ${yellow}'Updated ~/.bash_profile'${reset}
-cp ~/jeremy-venditto/dotfiles/.bash_profile ~/
-echo -e ${yellow}'Updated ~/.bashrc'${reset}
-cp ~/jeremy-venditto/dotfiles/.bashrc ~/
-echo -e ${yellow}'Updated ~/.gtkrc-2.0'${reset}
-cp ~/jeremy-venditto/dotfiles/.config/gtk-2.0/.gtkrc-2.0_dark ~/.gtkrc-2.0
-echo -e ${yellow}'Updated ~/.profile'${reset}
-cp ~/jeremy-venditto/dotfiles/.profile ~/
-echo -e ${yellow}'Updated ~/.xinitrc'${reset}
-cp ~/jeremy-venditto/dotfiles/.xinitrc ~/
-echo -e ${yellow}'Updated ~/.xprofile'${reset}
-cp ~/jeremy-venditto/dotfiles/.xprofile ~/
-echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
-sudo cp ~/jeremy-venditto/dotfiles/.resources/usr/share/pixmaps/* /usr/share/pixmaps/
+cp ~/jeremy-venditto/dotfiles/.bash_profile ~/ && echo -e ${yellow}'Updated ~/.bash_profile'${reset}
+cp ~/jeremy-venditto/dotfiles/.bashrc ~/ && echo -e ${yellow}'Updated ~/.bashrc'${reset}
+cp ~/jeremy-venditto/dotfiles/.config/gtk-2.0/.gtkrc-2.0_dark ~/.gtkrc-2.0 \
+&& echo -e ${yellow}'Updated ~/.gtkrc-2.0'${reset}
+cp ~/jeremy-venditto/dotfiles/.profile ~/ && echo -e ${yellow}'Updated ~/.profile'${reset}
+#cp ~/jeremy-venditto/dotfiles/.xinitrc ~/ && echo -e ${yellow}'Updated ~/.xinitrc'${reset}
+cp ~/jeremy-venditto/dotfiles/.xprofile ~/ && echo -e ${yellow}'Updated ~/.xprofile'${reset}
+sudo cp ~/jeremy-venditto/dotfiles/.resources/usr/share/pixmaps/* /usr/share/pixmaps/ \
+&& echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
+
     #directories
-echo -e ${yellow}'Updated ~/.config/'${reset}
 mkdir -p ~/.config
-cp -r ~/jeremy-venditto/dotfiles/.config/* ~/.config
-echo -e ${yellow}'Updated ~/.local/'${reset}
-cp -r ~/jeremy-venditto/dotfiles/.local/ ~/
+cp -r ~/jeremy-venditto/dotfiles/.config/* ~/.config && echo -e ${green}'Updated ~/.config/'${reset} \
+|| echo -e ${red}'Failed to update ~/.config/, press enter to continue';read
+mkdir -p ~/.local
+cp -r ~/jeremy-venditto/dotfiles/.local/ ~/ && echo -e ${green}'Updated ~/.local/'${reset} \
+|| echo -e ${red}'Failed to update ~/.local/, press enter to continue';read
+
+
+# ADD PROMPT HERE FOR DISIRED DIRECTORY
+# Temp fix...
+WALLPAPER_DIR="~/wallpaper"
 
     #wallpaper directory? default is ~/
-echo -e ${yellow}'Wallpaper Directory added to ~/wallpaper/'${reset}
+#echo -e ${yellow}'Wallpaper Directory added to ~/wallpaper/'${reset}
+echo -e ${yellow}'Wallpaper Directory configured to $WALLPAPER_DIR'${reset}
 mv ~/jeremy-venditto/wallpaper/ ~/ > /dev/null 2<&1
+mv ~/jeremy-venditto/wallpaper/ $WALLPAPER_DIR > /dev/null 2<&1
 
 # Change Nitrogen Settings
-echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
-echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
-
 if [[ $MACHINE = DESKTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
-if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/files/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+if [[ $MACHINE = LAPTOP ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
 if [[ $MACHINE = VIRTUAL ]]; then sed -i "/DIRS=/c\DIRS=/home/"$USER"/wallpaper/1920x1080" ~/.config/nitrogen/nitrogen.cfg;fi
+echo -e ${magenta}'Nitrogen Settings Have Been Updated.'${reset}
+#echo -e ${yellow}'Wallpaper Directory Set to ~/wallpaper/1920x1080.'${reset}
+echo -e ${yellow}'Wallpaper Directory Set to ${WALLPAPER_DIR}/1920x1080.'${reset}
 
 # Create screen resolution scripts for virtual machines
 if [[ $MACHINE = VIRTUAL ]]; then
 echo -e ${yellow}'Added 2 screen resolution scripts to ~/'${reset}
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/screen-normal.sh
-echo "xrandr --output Virtual-1 --primary --mode 1600x900 --rate 60" > ~/screen-almost-full.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/screen-full.sh
 chmod +x ~/screen-normal.sh ~/screen-almost-full.sh ~/screen-full.sh;fi
 
@@ -640,13 +665,13 @@ sudo systemctl enable lightdm
               #####################################
 
 # Change LightDM settings
-echo -e ${magenta}'LightDM Settings Have Been Updated.'${reset}
 if [[ $MACHINE = DESKTOP ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.conf_desktop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = LAPTOP ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.conf_laptop /etc/lightdm/lightdm-gtk-greeter.conf;fi
 if [[ $MACHINE = VIRTUAL ]]; then
 sudo cp ~/jeremy-venditto/dotfiles/.resources/etc/lightdm/lightdm-gtk-greeter.conf_vm /etc/lightdm/lightdm-gtk-greeter.conf;fi
+echo -e ${magenta}'LightDM Settings Have Been Updated.'${reset}
 
 # Change Grub Wallpaper
 echo -e ${magenta}'Updating GRUB Settings...'${reset}
@@ -656,31 +681,41 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 echo -e ${magenta}'GRUB Settings Have Been Updated.'${reset}
 
 # Enable nano syntax highlighting
-echo -e ${green}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
 ~/jeremy-venditto/bash-scripts/nano-syntax-highlighting.sh
+echo -e ${green}'Enabled Syntax Highlighting for the Nano Text Editor.'${reset}
 
 # Enabling Dark mode on QT5 and GTK applications
 ~/jeremy-venditto/bash-scripts/change-theme-gtk-qt.sh -d
+echo -e ${green}'Enabled Dark Mode for GTK and QT applications.'${reset}
 
 # Enable Firefox Config (dark, with extensions and private browsing)
 cp -r ~/github/dotfiles/.config/firefox/firefox-dark ~/.mozilla
+echo -e ${green}'Enabled Dark Mode Firefox with extensions.'${reset}
 
 # Copy Xterm configuration
-echo -e ${green}'Xterm configuration copied to ~/.Xresources'${reset}
-cp ~/.config/xterm/Xresources-dark ~/.Xresources
+cp ~/.config/xterm/.Xresources-dark ~/.Xresources
 xrdb ~/.Xresources
+echo -e ${green}'Xterm configuration copied to ~/.Xresources'${reset}
 
 # Install Dmenu
 echo -e ${yellow}'Installing Dmenu'${reset} && cd ~/.config/dmenu &&
-sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} || echo -e ${red}'Dmenu Installation Failed.'${reset}
+sudo make install && echo -e ${yellow}'Dmenu Has Been Installed.'${reset} \
+|| echo -e ${red}'Dmenu Installation Failed.'${reset}
 
 # Install pasystray version 0.7.1-2 (later versions are black only)
  # This may be outdated now.. check it later
 sudo cp ~/jeremy-venditto/dotfiles/.resources/packages/pasystray/* /var/cache/pacman/pkg
 sudo pacman -U /var/cache/pacman/pkg/pasystray-0.7.1-2-x86_64.pkg.tar.zst --noconfirm
+
  # add pasystray to list of ignored upgrade
 #echo 'IgnorePkg   = pasystray' | sudo tee -a /etc/pacman.conf
 sudo sed -i '/#IgnorePkg/c\IgnorePkg   = pasystray' /etc/pacman.conf
+
+# Configure Spotify Shell
+ln -s ~/.config/spotify-shell/sp ~/.local/bin/
+
+# Finish MPD Configuration / Install ncmpcpp
+mkdir -p ~/.config/mpd/playlists # playlist dir empty on git
 
               ############################
               #### Add user to groups ####
@@ -716,38 +751,64 @@ if [[ $checknethogs = /usr/bin/nethogs ]]; then setcap cap_net_admin,cap_net_raw
 checkwireshark=$(which wireshark > /dev/null 2>&1)
 if [[ $checkwireshark = /usr/bin/wireshark ]]; then setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap;fi
 
-              ######################################################################
-              #### Configure Cursors, Fonts, Icons and Themes (GTK-2/3 and QT5) ####
-              ######################################################################
 
+              #####################
+              ## Configure Fonts ##
+              #####################
 
-mkdir -p ~/.local/share/fonts
+# Create user font directory
+mkdir -p ~/.local/share/fonts/
+
+# Adobe Fonts
 mkdir -p ~/.local/share/fonts/adobe
-mkdir -p ~/.local/share/fonts/google
-mkdir -p ~/.local/share/fonts/microsoft
-mkdir -p ~/.local/share/fonts/nerd
-mkdir -p ~/.local/share/fonts/noto
-mkdir -p ~/.local/share/icons
-mkdir -p ~/.local/share/themes
-mkdir -p ~/.local/share/cursors
-# Fonts
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/adobe-all.tar.xz -C ~/.local/share/fonts/adobe
 echo -e ${yellow}'Adobe Fonts Installed'${reset}
+
+# Google Fonts
+mkdir -p ~/.local/share/fonts/google
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/google-all.tar.xz -C ~/.local/share/fonts/google
 echo -e ${yellow}'Google Fonts Installed'${reset}
+
+# Microsoft Fonts
+mkdir -p ~/.local/share/fonts/microsoft
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/microsoft-all.tar.xz -C ~/.local/share/fonts/microsoft
 echo -e ${yellow}'Microsoft Fonts Installed'${reset}
+
+# Nerd Fonts
+mkdir -p ~/.local/share/fonts/nerd
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/nerd-all.tar.xz -C ~/.local/share/fonts/nerd
 echo -e ${yellow}'Nerd Fonts Installed'${reset}
+
+# Noto Fonts
+mkdir -p ~/.local/share/fonts/noto
 tar -xf ~/jeremy-venditto/dotfiles/.resources/fonts/noto-all.tar.xz -C ~/.local/share/fonts/noto
 echo -e ${yellow}'Noto Fonts Installed'${reset}
+
+              #######################
+              ## Configure Cursors ##
+              #######################
+
 # Cursors
+mkdir -p ~/.local/share/cursors
 tar -xf ~/jeremy-venditto/dotfiles/.resources/cursors/cursors-all.tar.xz -C ~/.local/share/cursors
 echo -e ${yellow}'Cursors Installed'${reset}
+
+              #####################
+              ## Configure Icons ##
+              #####################
+
 # Icons
+mkdir -p ~/.local/share/icons
 tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/icons-all.tar.xz -C ~/.local/share/icons
 echo -e ${yellow}'Icons Installed'${reset}
+
+
+              ######################
+              ## Configure Themes ##
+              ######################
+
 # Themes
+mkdir -p ~/.local/share/themes
 tar -xf ~/jeremy-venditto/dotfiles/.resources/themes/themes-all.tar.xz -C ~/.local/share/themes
 echo -e ${yellow}'Themes Installed'${reset}
 
@@ -795,6 +856,17 @@ echo -e ${yellow}'Themes Installed'${reset}
 # ePapirus Icons
 #sudo tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/ePapirus.tar.xz -C /usr/share/icons
 #echo -e ${yellow}'ePapirus Icons added'${reset}
+
+              ############################################
+              #### Packages for my easy-audio program ####
+              ############################################
+
+#sudo pacman -S pulsemixer paprefs pulseaudio pulseaudio-equalizer-ladspa bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth
+# set easy-audio to run at boot with settings 'laptop'
+#cp ~/.config/pulse/eq-config/laptop ~/.config/pulse/equalizerrc && pulseaudio-equalizer enable >> ~/.xprofile
+
+##!!!!# fixed for right now #!!!!##
+
 
               ###################
               ## End of Script ##
