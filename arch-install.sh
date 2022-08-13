@@ -555,18 +555,22 @@ sudo pacman -S archlinux-keyring --noconfirm
 	#Packages for all machine types
 #sudo pacman -S - < ~/jeremy-venditto/dotfiles/.resources/NEW_pacman_full --noconfirm
 echo -e ${yellow}'Installing packages for all machine types'${reset}
-sudo pacman -S lightdm lightdm-gtk-greeter-settings xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr awesome xterm terminator exa ufw firefox qt5ct nitrogen alsa-utils pulseaudio kvantum --noconfirm
+sudo pacman -S \
+alsa-utils awesome exa firefox gnome-themes-extra lightdm lightdm-gtk-greeter-settings kvantum mpc mpd ncmpcpp nitrogen \
+pulseaudio qt5ct terminator ufw xorg-server xorg-xrdb xorg-xkill xorg-xprop xorg-xrandr xterm --noconfirm
 # Retry packages if they fail
 if [[ $? != 0 ]];then !!;fi
-sudo pacman -S pulsemixer paprefs pulseaudio pulseaudio-equalizer-ladspa bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth
+# Packages for my easy-audio script
+sudo pacman -S pulsemixer paprefs pulseaudio-equalizer-ladspa bluez bluez-libs bluez-tools bluez-utils pulseaudio pulseaudio-bluetooth --noconfirm
+# Retry pacakges if they fail
 if [[ $? != 0 ]];then !!;fi
 
 
         #Install yay AUR helper
-echo
-echo -e ${yellow}'Installing yay AUR helper'${reset}
+echo;echo -e ${yellow}'Installing yay AUR helper'${reset}
 git clone https://aur.archlinux.org/yay
 cd yay && makepkg -si --noconfirm
+# no issues yet, but might get stuck this directory... (&& cd -)?
 
         #Install machine specific packages
 
@@ -612,12 +616,17 @@ sudo cp ~/jeremy-venditto/dotfiles/.resources/usr/share/pixmaps/* /usr/share/pix
 && echo -e ${yellow}'Added files to /usr/share/pixmaps/'${reset}
 
     #directories
+# very problematic if these directories fail... so i added a user notification
+#FAILED_WARNING=("This failure warning means that this script will not be able to complete many of the
+#required configurations. You may attempt to continue running this script, or cancel and run them manually.
+#
+#Be aware that this may be a Storage issue")
+FAILED_CONFIG=$(echo -e ${red}'Failed to update ~/.config/, press enter to continue or control-c to exit';read)
+FAILED_LOCAL=$(echo -e ${red}'Failed to update ~/.local/, press enter to continue or control-c to exit';read)
 mkdir -p ~/.config
-cp -r ~/jeremy-venditto/dotfiles/.config/* ~/.config && echo -e ${green}'Updated ~/.config/'${reset} \
-|| echo -e ${red}'Failed to update ~/.config/, press enter to continue';read
+cp -r ~/jeremy-venditto/dotfiles/.config/* ~/.config && echo -e ${green}'Updated ~/.config/'${reset} || $FAILED_CONFIG
 mkdir -p ~/.local
-cp -r ~/jeremy-venditto/dotfiles/.local/ ~/ && echo -e ${green}'Updated ~/.local/'${reset} \
-|| echo -e ${red}'Failed to update ~/.local/, press enter to continue';read
+cp -r ~/jeremy-venditto/dotfiles/.local/ ~/ && echo -e ${green}'Updated ~/.local/'${reset} || $FAILED_LOCAL
 
 
 # ADD PROMPT HERE FOR DISIRED DIRECTORY
@@ -643,7 +652,7 @@ if [[ $MACHINE = VIRTUAL ]]; then
 echo -e ${yellow}'Added 2 screen resolution scripts to ~/'${reset}
 echo "xrandr --output Virtual-1 --primary --mode 1024x768 --rate 60" > ~/screen-normal.sh
 echo "xrandr --output Virtual-1 --primary --mode 1920x1080 --rate 60" > ~/screen-full.sh
-chmod +x ~/screen-normal.sh ~/screen-almost-full.sh ~/screen-full.sh;fi
+chmod +x ~/screen-normal.sh ~/screen-full.sh;fi
 
               #########################
               #### Enable Services ####
@@ -799,8 +808,16 @@ echo -e ${yellow}'Cursors Installed'${reset}
 
 # Icons
 mkdir -p ~/.local/share/icons
+# a bunch... gonna fix this
 tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/icons-all.tar.xz -C ~/.local/share/icons
+# Papirus Red Icons
+tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/papirus-icon-theme-red-folders.tar.xz -C ~/.local/share/icons
+# Papirus Indigo Icons
+tar -xf ~/jeremy-venditto/dotfiles/.resources/icons/papirus-icon-theme-indigo-folders.tar.xz -C ~/.local/share/icons
+
+
 echo -e ${yellow}'Icons Installed'${reset}
+
 
 
               ######################
